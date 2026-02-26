@@ -1,0 +1,19 @@
+You are building PoseApp, a mobile figure drawing practice app for Android and iOS.
+
+READ the file SPECIFICATION.md in the project root before doing any work. It is the complete app specification. Follow it precisely.
+
+Tech stack:
+- React Native with Expo SDK 54
+- Expo Router for file-based navigation
+- TypeScript for all code
+- expo-three or react-three-fiber for 3D rendering
+- i18next + expo-localization for translations
+- AsyncStorage for local data persistence
+
+Rules:
+- Always use TypeScript, never plain JavaScript.
+- Use Expo SDK libraries over third-party packages when possible.
+- Screens go in the app/ directory (file-based routing via Expo Router).
+- All user-facing strings must be externalised for localisation — never hardcode display text.
+- Follow the Build Phases section of the spec. Complete each phase fully before moving to the next.
+- After completing work, briefly state what was done and what the next step is.

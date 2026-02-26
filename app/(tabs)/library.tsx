@@ -1,13 +1,13 @@
 import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { STRINGS } from '@/constants/strings';
 import { Colors } from '@/constants/theme';
+import { useRouter } from 'expo-router';
 import { Pressable } from 'react-native';
 
-export default function PracticeScreen() {
+export default function LibraryScreen() {
   const router = useRouter();
 
   const handleOpenViewer = () => {
@@ -16,10 +16,10 @@ export default function PracticeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">{STRINGS.practice.title}</ThemedText>
+      <ThemedText type="title">{STRINGS.library.title}</ThemedText>
       <View style={styles.content}>
         <Pressable style={styles.button} onPress={handleOpenViewer}>
-          <ThemedText type="defaultSemiBold">{STRINGS.practice.openViewerButton}</ThemedText>
+          <ThemedText type="defaultSemiBold">{STRINGS.library.openViewerButton}</ThemedText>
         </Pressable>
       </View>
     </ThemedView>
