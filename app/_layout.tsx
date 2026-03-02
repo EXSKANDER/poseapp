@@ -25,6 +25,14 @@ export default function RootLayout() {
             title: STRINGS.viewer.title,
           }}
         />
+        <Stack.Screen
+          name="session-config"
+          options={{
+            presentation: 'modal',
+            headerShown: false,
+            title: STRINGS.sessionConfig.title,
+          }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

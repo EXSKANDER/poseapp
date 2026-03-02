@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
 import Slider from '@react-native-community/slider';
 import { TouchableOpacity } from 'react-native';
@@ -10,18 +10,53 @@ import { STRINGS } from '@/constants/strings';
 import { Colors } from '@/constants/theme';
 import { ThemedView } from '@/components/themed-view';
 
-const INITIAL_DURATION_SECONDS = 60;
+const FALLBACK_DURATION_SECONDS = 60;
+
+type ViewerSessionConfig = {
+  poseDurationSeconds?: number;
+  directionalIntensity?: number;
+  ambientIntensity?: number;
+  showGrid?: boolean;
+  background?: 'dark' | 'mid' | 'light';
+};
 
 export default function ViewerScreen() {
   useKeepAwake();
 
   const router = useRouter();
-  const [remaining, setRemaining] = useState(INITIAL_DURATION_SECONDS);
+  const params = useLocalSearchParams<{ config?: string }>();
+
+  const parsedConfig: ViewerSessionConfig | null = useMemo(() => {
+    if (!params.config || typeof params.config !== 'string') {
+      return null;
+    }
+    try {
+      return JSON.parse(params.config) as ViewerSessionConfig;
+    } catch {
+      return null;
+    }
+  }, [params.config]);
+
+  const initialDuration = parsedConfig?.poseDurationSeconds ?? FALLBACK_DURATION_SECONDS;
+
+  const [remaining, setRemaining] = useState(initialDuration);
   const [isPlaying, setIsPlaying] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const [directionalIntensity, setDirectionalIntensity] = useState(1);
-  const [ambientIntensity, setAmbientIntensity] = useState(0.4);
+  const [directionalIntensity, setDirectionalIntensity] = useState(
+    parsedConfig?.directionalIntensity ?? 1,
+  );
+  const [ambientIntensity, setAmbientIntensity] = useState(
+    parsedConfig?.ambientIntensity ?? 0.4,
+  );
+  const [showGrid, setShowGrid] = useState(parsedConfig?.showGrid ?? true);
+
+  const viewerBackground =
+    parsedConfig?.background === 'light'
+      ? '#e0e0e0'
+      : parsedConfig?.background === 'mid'
+        ? '#3a3a3a'
+        : '#2c2c2c';
 
   useEffect(() => {
     if (intervalRef.current) {
@@ -57,13 +92,13 @@ export default function ViewerScreen() {
 
   const handleTogglePlay = () => {
     if (remaining === 0) {
-      setRemaining(INITIAL_DURATION_SECONDS);
+      setRemaining(initialDuration);
     }
     setIsPlaying((prev) => !prev);
   };
 
   const handleSkip = () => {
-    setRemaining(INITIAL_DURATION_SECONDS);
+    setRemaining(initialDuration);
   };
 
   const handleClose = () => {
@@ -90,6 +125,8 @@ export default function ViewerScreen() {
           <Viewer3D
             directionalIntensity={directionalIntensity}
             ambientIntensity={ambientIntensity}
+            showGrid={showGrid}
+            backgroundColor={viewerBackground}
           />
         </View>
 
@@ -137,6 +174,17 @@ export default function ViewerScreen() {
                 maximumTrackTintColor="#666"
                 thumbTintColor={Colors.light.tint}
               />
+            </View>
+            <View style={styles.sliderRow}>
+              <Text style={styles.sliderLabel}>{STRINGS.sessionConfig.showGridLabel}</Text>
+              <TouchableOpacity
+                onPress={() => setShowGrid((prev) => !prev)}
+                style={styles.toggleButton}
+              >
+                <Text style={styles.toggleButtonText}>
+                  {showGrid ? STRINGS.common.on : STRINGS.common.off}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -229,6 +277,17 @@ const styles = StyleSheet.create({
   },
   slider: {
     flex: 1,
+  },
+  toggleButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#ffffff22',
+  },
+  toggleButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 

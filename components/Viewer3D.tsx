@@ -7,9 +7,16 @@ import * as THREE from 'three';
 type Viewer3DProps = {
   directionalIntensity: number;
   ambientIntensity: number;
+  showGrid?: boolean;
+  backgroundColor?: string;
 };
 
-export function Viewer3D({ directionalIntensity, ambientIntensity }: Viewer3DProps) {
+export function Viewer3D({
+  directionalIntensity,
+  ambientIntensity,
+  showGrid = true,
+  backgroundColor = '#2c2c2c',
+}: Viewer3DProps) {
   const layoutRef = useRef({ width: 0, height: 0 });
   const rotationRef = useRef({ x: 0, y: 0 });
   const panRef = useRef({ x: 0, y: 0 });
@@ -37,7 +44,7 @@ export function Viewer3D({ directionalIntensity, ambientIntensity }: Viewer3DPro
 
       const renderer = new Renderer({ gl });
       renderer.setSize(width, height);
-      renderer.setClearColor('#2c2c2c');
+      renderer.setClearColor(backgroundColor);
 
       const scene = new THREE.Scene();
 
@@ -63,9 +70,12 @@ export function Viewer3D({ directionalIntensity, ambientIntensity }: Viewer3DPro
       const cube = new THREE.Mesh(geometry, material);
       scene.add(cube);
 
-      const grid = new THREE.GridHelper(10, 10, 0x555555, 0x333333);
-      grid.position.y = -1.5;
-      scene.add(grid);
+      let grid: THREE.GridHelper | null = null;
+      if (showGrid) {
+        grid = new THREE.GridHelper(10, 10, 0x555555, 0x333333);
+        grid.position.y = -1.5;
+        scene.add(grid);
+      }
 
       const clock = new THREE.Clock();
 
@@ -96,7 +106,7 @@ export function Viewer3D({ directionalIntensity, ambientIntensity }: Viewer3DPro
 
       render();
     },
-    [ambientIntensity, directionalIntensity],
+    [ambientIntensity, backgroundColor, directionalIntensity, showGrid],
   );
 
   const panResponder = useRef<PanResponderInstance>(

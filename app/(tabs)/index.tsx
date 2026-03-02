@@ -11,7 +11,7 @@ export default function PracticeScreen() {
   const router = useRouter();
 
   const handleOpenViewer = () => {
-    router.push('/viewer');
+    router.push('/session-config');
   };
 
   return (
@@ -19,7 +19,9 @@ export default function PracticeScreen() {
       <ThemedText type="title">{STRINGS.practice.title}</ThemedText>
       <View style={styles.content}>
         <Pressable style={styles.button} onPress={handleOpenViewer}>
-          <ThemedText type="defaultSemiBold">{STRINGS.practice.openViewerButton}</ThemedText>
+          <ThemedText type="defaultSemiBold">
+            {STRINGS.practice.startPracticeButton}
+          </ThemedText>
         </Pressable>
       </View>
     </ThemedView>
