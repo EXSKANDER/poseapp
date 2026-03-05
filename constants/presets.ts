@@ -122,5 +122,5 @@ export const BUILTIN_PRESETS: SessionPreset[] = [
       randomOrder: true,
     },
   },
-};
+];
 
