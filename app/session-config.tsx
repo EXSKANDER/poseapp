@@ -8,76 +8,62 @@ import {
   Pressable,
   Switch,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { STRINGS } from '@/constants/strings';
 import { Colors } from '@/constants/theme';
-
-type GenderOption = 'male' | 'female' | 'both';
-
-type SessionConfig = {
-  poseDurationSeconds: number;
-  poseCount: number;
-  breakDurationSeconds: number;
-  randomOrder: boolean;
-  gender: GenderOption;
-  categories: string[];
-  showGrid: boolean;
-  background: 'dark' | 'mid' | 'light';
-  directionalIntensity: number;
-  ambientIntensity: number;
-};
-
-type SessionPreset = {
-  id: string;
-  name: string;
-  config: SessionConfig;
-};
-
-const PRESETS_STORAGE_KEY = 'poseapp.sessionPresets';
-
-const DEFAULT_CONFIG: SessionConfig = {
-  poseDurationSeconds: 60,
-  poseCount: 10,
-  breakDurationSeconds: 0,
-  randomOrder: true,
-  gender: 'both',
-  categories: [],
-  showGrid: true,
-  background: 'dark',
-  directionalIntensity: 1,
-  ambientIntensity: 0.4,
-};
+import {
+  BUILTIN_PRESETS,
+  DEFAULT_SESSION_CONFIG,
+  PRESETS_STORAGE_KEY,
+  SessionConfig,
+  SessionPreset,
+} from '@/constants/presets';
 
 const DURATION_OPTIONS = [30, 60, 120, 300];
 const POSE_COUNT_OPTIONS = [1, 5, 10, 20];
 const BREAK_OPTIONS = [0, 5, 10, 30];
 
+type SessionConfigParams = {
+  presetId?: string;
+};
+
 export default function SessionConfigScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<SessionConfigParams>();
 
-  const [config, setConfig] = useState<SessionConfig>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<SessionConfig>(DEFAULT_SESSION_CONFIG);
   const [presetName, setPresetName] = useState('');
   const [presets, setPresets] = useState<SessionPreset[]>([]);
+  const [editingPresetId, setEditingPresetId] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadPresets = async () => {
+    const loadPresetsAndMaybeApplyEditing = async () => {
       try {
         const stored = await AsyncStorage.getItem(PRESETS_STORAGE_KEY);
-        if (stored) {
-          const parsed: SessionPreset[] = JSON.parse(stored);
-          setPresets(parsed);
+        const storedPresets: SessionPreset[] = stored ? JSON.parse(stored) : [];
+        setPresets(storedPresets);
+
+        if (params.presetId && !editingPresetId) {
+          const allPresets: SessionPreset[] = [...BUILTIN_PRESETS, ...storedPresets];
+          const preset = allPresets.find((p) => p.id === params.presetId);
+
+          if (preset) {
+            setConfig(preset.config);
+            setPresetName(preset.name);
+            setEditingPresetId(preset.id);
+          }
         }
       } catch {
         // ignore read errors
       }
     };
 
-    loadPresets();
-  }, []);
+    loadPresetsAndMaybeApplyEditing();
+  }, [params.presetId, editingPresetId]);
 
   const handleStartSession = () => {
     const encodedConfig = JSON.stringify(config);
@@ -108,6 +94,56 @@ export default function SessionConfigScreen() {
     }
 
     setPresetName('');
+    setEditingPresetId(null);
+  };
+
+  const handleUpdatePreset = async () => {
+    if (!editingPresetId) {
+      return;
+    }
+
+    try {
+      const stored = await AsyncStorage.getItem(PRESETS_STORAGE_KEY);
+      const storedPresets: SessionPreset[] = stored ? JSON.parse(stored) : [];
+
+      const isBuiltIn = BUILTIN_PRESETS.some((p) => p.id === editingPresetId);
+
+      let nextPresets: SessionPreset[];
+
+      if (isBuiltIn) {
+        const existingIndex = storedPresets.findIndex((p) => p.id === editingPresetId);
+        const updated: SessionPreset = {
+          id: editingPresetId,
+          name:
+            presetName.trim() ||
+            BUILTIN_PRESETS.find((p) => p.id === editingPresetId)?.name ||
+            '',
+          config,
+        };
+
+        if (existingIndex >= 0) {
+          nextPresets = [...storedPresets];
+          nextPresets[existingIndex] = updated;
+        } else {
+          nextPresets = [...storedPresets, updated];
+        }
+      } else {
+        nextPresets = storedPresets.map((preset) =>
+          preset.id === editingPresetId
+            ? {
+                ...preset,
+                name: presetName.trim() || preset.name,
+                config,
+              }
+            : preset,
+        );
+      }
+
+      await AsyncStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(nextPresets));
+      setPresets(nextPresets);
+    } catch {
+      // ignore write errors
+    }
   };
 
   const applyPreset = (preset: SessionPreset) => {
@@ -305,9 +341,18 @@ export default function SessionConfigScreen() {
             />
             <Pressable style={styles.primaryButton} onPress={handleSavePreset}>
               <Text style={styles.primaryButtonText}>
-                {STRINGS.sessionConfig.savePresetButton}
+                {editingPresetId
+                  ? STRINGS.sessionConfig.savePresetAsNewButton
+                  : STRINGS.sessionConfig.savePresetButton}
               </Text>
             </Pressable>
+            {editingPresetId && (
+              <Pressable style={styles.secondaryButton} onPress={handleUpdatePreset}>
+                <Text style={styles.secondaryButtonText}>
+                  {STRINGS.sessionConfig.updatePresetButton}
+                </Text>
+              </Pressable>
+            )}
           </View>
 
           {presets.length > 0 && (
@@ -463,6 +508,17 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.light.tint,
   },
   primaryButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  secondaryButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
+    backgroundColor: '#ffffff22',
+  },
+  secondaryButtonText: {
     color: '#fff',
     fontWeight: '600',
     fontSize: 12,

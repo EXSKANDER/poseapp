@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
 import Slider from '@react-native-community/slider';
 import { TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Viewer3D } from '@/components/Viewer3D';
 import { STRINGS } from '@/constants/strings';
@@ -11,6 +12,7 @@ import { Colors } from '@/constants/theme';
 import { ThemedView } from '@/components/themed-view';
 
 const FALLBACK_DURATION_SECONDS = 60;
+const SESSION_DATES_STORAGE_KEY = 'poseapp.sessionStartDates';
 
 type ViewerSessionConfig = {
   poseDurationSeconds?: number;
@@ -57,6 +59,27 @@ export default function ViewerScreen() {
       : parsedConfig?.background === 'mid'
         ? '#3a3a3a'
         : '#2c2c2c';
+
+  useEffect(() => {
+    const recordSessionStart = async () => {
+      const today = new Date();
+      const dateKey = today.toISOString().slice(0, 10);
+
+      try {
+        const stored = await AsyncStorage.getItem(SESSION_DATES_STORAGE_KEY);
+        const dates: string[] = stored ? JSON.parse(stored) : [];
+
+        if (!dates.includes(dateKey)) {
+          const nextDates = [...dates, dateKey];
+          await AsyncStorage.setItem(SESSION_DATES_STORAGE_KEY, JSON.stringify(nextDates));
+        }
+      } catch {
+        // ignore persistence errors
+      }
+    };
+
+    recordSessionStart();
+  }, []);
 
   useEffect(() => {
     if (intervalRef.current) {
