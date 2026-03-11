@@ -26,7 +26,14 @@ export default function ViewerScreen() {
   useKeepAwake();
 
   const router = useRouter();
-  const params = useLocalSearchParams<{ config?: string }>();
+  const params = useLocalSearchParams<{
+    config?: string;
+    mode?: string;
+    poseId?: string;
+    poseName?: string;
+  }>();
+
+  const isFreeStudy = params.mode === 'free-study';
 
   const parsedConfig: ViewerSessionConfig | null = useMemo(() => {
     if (!params.config || typeof params.config !== 'string') {
@@ -42,7 +49,7 @@ export default function ViewerScreen() {
   const initialDuration = parsedConfig?.poseDurationSeconds ?? FALLBACK_DURATION_SECONDS;
 
   const [remaining, setRemaining] = useState(initialDuration);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(!isFreeStudy);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [directionalIntensity, setDirectionalIntensity] = useState(
@@ -61,6 +68,8 @@ export default function ViewerScreen() {
         : '#2c2c2c';
 
   useEffect(() => {
+    if (isFreeStudy) return;
+
     const recordSessionStart = async () => {
       const today = new Date();
       const dateKey = today.toISOString().slice(0, 10);
@@ -79,9 +88,11 @@ export default function ViewerScreen() {
     };
 
     recordSessionStart();
-  }, []);
+  }, [isFreeStudy]);
 
   useEffect(() => {
+    if (isFreeStudy) return;
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -103,7 +114,7 @@ export default function ViewerScreen() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isPlaying]);
+  }, [isPlaying, isFreeStudy]);
 
   useEffect(() => {
     if (remaining === 0 && intervalRef.current) {
@@ -133,14 +144,22 @@ export default function ViewerScreen() {
     .padStart(2, '0');
   const seconds = (remaining % 60).toString().padStart(2, '0');
 
+  const displayTitle = isFreeStudy
+    ? params.poseName || STRINGS.viewer.freeStudyTitle
+    : STRINGS.viewer.title;
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.topBar}>
           <TouchableOpacity onPress={handleClose} style={styles.topButton}>
-            <Text style={styles.topButtonText}>{STRINGS.viewer.close}</Text>
+            <Text style={styles.topButtonText}>
+              {isFreeStudy ? STRINGS.viewer.back : STRINGS.viewer.close}
+            </Text>
           </TouchableOpacity>
-          <Text style={styles.title}>{STRINGS.viewer.title}</Text>
+          <Text style={styles.title} numberOfLines={1}>
+            {displayTitle}
+          </Text>
           <View style={styles.topButtonPlaceholder} />
         </View>
 
@@ -154,22 +173,27 @@ export default function ViewerScreen() {
         </View>
 
         <View style={styles.bottomPanel}>
-          <View style={styles.timerRow}>
-            <Text style={styles.timerLabel}>{STRINGS.viewer.timerLabel}</Text>
-            <Text style={styles.timerValue}>
-              {minutes}:{seconds}
-            </Text>
-          </View>
-          <View style={styles.controlsRow}>
-            <TouchableOpacity onPress={handleTogglePlay} style={styles.controlButton}>
-              <Text style={styles.controlButtonText}>
-                {isPlaying ? STRINGS.viewer.pause : STRINGS.viewer.play}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleSkip} style={styles.controlButton}>
-              <Text style={styles.controlButtonText}>{STRINGS.viewer.skip}</Text>
-            </TouchableOpacity>
-          </View>
+          {/* Timer & session controls only in session mode */}
+          {!isFreeStudy && (
+            <>
+              <View style={styles.timerRow}>
+                <Text style={styles.timerLabel}>{STRINGS.viewer.timerLabel}</Text>
+                <Text style={styles.timerValue}>
+                  {minutes}:{seconds}
+                </Text>
+              </View>
+              <View style={styles.controlsRow}>
+                <TouchableOpacity onPress={handleTogglePlay} style={styles.controlButton}>
+                  <Text style={styles.controlButtonText}>
+                    {isPlaying ? STRINGS.viewer.pause : STRINGS.viewer.play}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleSkip} style={styles.controlButton}>
+                  <Text style={styles.controlButtonText}>{STRINGS.viewer.skip}</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
 
           <View style={styles.slidersContainer}>
             <View style={styles.sliderRow}>
@@ -247,6 +271,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
   },
   viewerContainer: {
     flex: 1,
@@ -313,4 +339,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
