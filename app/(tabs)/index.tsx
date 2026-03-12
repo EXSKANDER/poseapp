@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Animated,
   FlatList,
   Modal,
   Pressable,
@@ -51,6 +52,25 @@ export default function PracticeScreen() {
   const [selectedPreset, setSelectedPreset] = useState<PresetWithMeta | null>(null);
   const [isRenameModalVisible, setIsRenameModalVisible] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+
+  // Entry animation
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
 
   useEffect(() => {
     const loadPresetsAndLayout = async () => {
@@ -293,13 +313,25 @@ export default function PracticeScreen() {
     <Pressable
       onPress={() => handleStartFromPreset(item)}
       onLongPress={() => handleOpenContextMenu(item)}
-      style={[styles.presetCard, item.isCustom ? styles.presetCardCustom : styles.presetCardBuiltIn]}
+      style={({ pressed }) => [
+        styles.presetCard,
+        item.isCustom ? styles.presetCardCustom : styles.presetCardBuiltIn,
+        pressed && styles.presetCardPressed,
+      ]}
+      accessibilityLabel={`Start ${item.name} preset`}
+      accessibilityRole="button"
     >
       <View style={styles.presetHeaderRow}>
-        <ThemedText type="defaultSemiBold" style={styles.presetName}>
+        <ThemedText type="defaultSemiBold" style={styles.presetName} numberOfLines={2}>
           {item.name}
         </ThemedText>
-        <Pressable onPress={() => handleEditPreset(item)} hitSlop={8} style={styles.cogButton}>
+        <Pressable
+          onPress={() => handleEditPreset(item)}
+          hitSlop={8}
+          style={styles.cogButton}
+          accessibilityLabel={`Edit ${item.name}`}
+          accessibilityRole="button"
+        >
           <Text style={styles.cogButtonText}>⚙︎</Text>
         </Pressable>
       </View>
@@ -307,30 +339,47 @@ export default function PracticeScreen() {
         {formatPresetMeta(item.config ?? DEFAULT_SESSION_CONFIG)}
       </Text>
       <View style={styles.presetBadgeRow}>
-        <Text style={styles.presetBadgeText}>
-          {item.isCustom ? STRINGS.practice.presetsCustomBadge : STRINGS.practice.presetsBuiltInBadge}
-        </Text>
+        <View style={[styles.presetBadge, item.isCustom && styles.presetBadgeCustom]}>
+          <Text style={styles.presetBadgeText}>
+            {item.isCustom ? STRINGS.practice.presetsCustomBadge : STRINGS.practice.presetsBuiltInBadge}
+          </Text>
+        </View>
       </View>
     </Pressable>
   );
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <Animated.ScrollView
+        contentContainerStyle={styles.scrollContent}
+        style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
+      >
         <ThemedText type="title" style={styles.title}>
           {STRINGS.practice.title}
         </ThemedText>
 
-        <Pressable style={styles.startButton} onPress={handleOpenConfig}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.startButton,
+            pressed && styles.startButtonPressed,
+          ]}
+          onPress={handleOpenConfig}
+          accessibilityLabel="Start a new practice session"
+          accessibilityRole="button"
+        >
+          <Text style={styles.startButtonIcon}>▶</Text>
           <ThemedText type="defaultSemiBold" style={styles.startButtonLabel}>
             {STRINGS.practice.startPracticeButton}
           </ThemedText>
         </Pressable>
 
         <View style={styles.streakCard}>
-          <ThemedText type="subtitle" style={styles.streakTitle}>
-            {STRINGS.practice.streakLabel}
-          </ThemedText>
+          <View style={styles.streakHeader}>
+            <Text style={styles.streakIcon}>🔥</Text>
+            <ThemedText type="subtitle" style={styles.streakTitle}>
+              {STRINGS.practice.streakLabel}
+            </ThemedText>
+          </View>
           <Text style={styles.streakValue}>
             {streakDays > 0
               ? `${streakDays} ${
@@ -355,7 +404,7 @@ export default function PracticeScreen() {
           scrollEnabled={false}
           contentContainerStyle={styles.presetListContent}
         />
-      </ScrollView>
+      </Animated.ScrollView>
 
       <Modal
         visible={isContextMenuVisible && !!selectedPreset}
@@ -371,6 +420,7 @@ export default function PracticeScreen() {
             <Pressable
               style={styles.contextMenuItem}
               onPress={() => handleContextAction('edit')}
+              accessibilityRole="button"
             >
               <Text style={styles.contextMenuItemText}>
                 {STRINGS.practice.presetContextEdit}
@@ -379,6 +429,7 @@ export default function PracticeScreen() {
             <Pressable
               style={styles.contextMenuItem}
               onPress={() => handleContextAction('rename')}
+              accessibilityRole="button"
             >
               <Text style={styles.contextMenuItemText}>
                 {STRINGS.practice.presetContextRename}
@@ -388,6 +439,7 @@ export default function PracticeScreen() {
               <Pressable
                 style={styles.contextMenuItem}
                 onPress={() => handleContextAction('hide')}
+                accessibilityRole="button"
               >
                 <Text style={styles.contextMenuItemText}>
                   {STRINGS.practice.presetContextHide}
@@ -397,6 +449,7 @@ export default function PracticeScreen() {
               <Pressable
                 style={styles.contextMenuItem}
                 onPress={() => handleContextAction('delete')}
+                accessibilityRole="button"
               >
                 <Text style={styles.contextMenuItemText}>
                   {STRINGS.practice.presetContextDelete}
@@ -406,6 +459,7 @@ export default function PracticeScreen() {
             <Pressable
               style={styles.contextMenuItem}
               onPress={() => handleContextAction('moveUp')}
+              accessibilityRole="button"
             >
               <Text style={styles.contextMenuItemText}>
                 {STRINGS.practice.presetContextMoveUp}
@@ -414,6 +468,7 @@ export default function PracticeScreen() {
             <Pressable
               style={styles.contextMenuItem}
               onPress={() => handleContextAction('moveDown')}
+              accessibilityRole="button"
             >
               <Text style={styles.contextMenuItemText}>
                 {STRINGS.practice.presetContextMoveDown}
@@ -441,6 +496,7 @@ export default function PracticeScreen() {
               value={renameValue}
               onChangeText={setRenameValue}
               style={styles.renameInput}
+              accessibilityLabel="New preset name"
             />
             <View style={styles.renameButtonsRow}>
               <Pressable
@@ -488,7 +544,7 @@ function formatPresetMeta(config: SessionConfig): string {
     config.poseDurationSeconds >= 60
       ? `${config.poseDurationSeconds / 60}m`
       : `${config.poseDurationSeconds}s`;
-  return `${durationLabel} · ${config.poseCount}`;
+  return `${durationLabel} × ${config.poseCount} poses`;
 }
 
 const styles = StyleSheet.create({
@@ -497,36 +553,69 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 24,
-    paddingBottom: 32,
+    paddingBottom: 40,
     gap: 16,
   },
   title: {
     marginBottom: 4,
   },
+  // Start Practice button - prominent and inviting
   startButton: {
     marginTop: 8,
-    paddingVertical: 16,
-    borderRadius: 999,
+    paddingVertical: 18,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 10,
     backgroundColor: Colors.light.tint,
+    shadowColor: Colors.light.tint,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  startButtonPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
+  startButtonIcon: {
+    color: '#fff',
+    fontSize: 18,
   },
   startButtonLabel: {
     color: '#fff',
+    fontSize: 17,
   },
+  // Streak card
   streakCard: {
-    marginTop: 16,
-    padding: 16,
+    marginTop: 12,
+    padding: 18,
     borderRadius: 16,
-    backgroundColor: '#00000055',
+    backgroundColor: '#00000044',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  streakHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  streakIcon: {
+    fontSize: 20,
   },
   streakTitle: {
-    marginBottom: 4,
+    marginBottom: 0,
   },
   streakValue: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
+    marginLeft: 28,
   },
   presetsHeaderRow: {
     marginTop: 16,
@@ -542,58 +631,82 @@ const styles = StyleSheet.create({
   presetListContent: {
     paddingBottom: 8,
   },
+  // Polished preset cards
   presetCard: {
     flex: 1,
-    padding: 12,
+    padding: 14,
     borderRadius: 16,
     marginHorizontal: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
   },
   presetCardBuiltIn: {
-    backgroundColor: '#00000033',
+    backgroundColor: '#1a2a3a',
   },
   presetCardCustom: {
-    backgroundColor: '#00000066',
+    backgroundColor: '#1a1a2e',
     borderWidth: 1,
     borderColor: Colors.light.tint,
   },
+  presetCardPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.97 }],
+  },
   presetHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   presetName: {
     flex: 1,
     marginRight: 8,
+    fontSize: 14,
+    lineHeight: 18,
   },
   cogButton: {
+    minWidth: 44,
+    minHeight: 44,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
     backgroundColor: '#ffffff22',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cogButtonText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 14,
   },
   presetMeta: {
-    color: '#ddd',
+    color: '#bbb',
     fontSize: 12,
-    marginBottom: 6,
+    marginBottom: 8,
   },
   presetBadgeRow: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
   },
+  presetBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  presetBadgeCustom: {
+    backgroundColor: Colors.light.tint + '33',
+  },
   presetBadgeText: {
     color: '#fff',
     fontSize: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: '#ffffff22',
     textTransform: 'uppercase',
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
+  // Modals
   modalBackdrop: {
     flex: 1,
     backgroundColor: '#000000aa',
@@ -602,26 +715,35 @@ const styles = StyleSheet.create({
   },
   contextMenu: {
     width: '80%',
-    borderRadius: 16,
-    padding: 16,
-    backgroundColor: '#1e1e1e',
+    borderRadius: 20,
+    padding: 20,
+    backgroundColor: '#1a1a2e',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 10,
   },
   contextMenuTitle: {
-    marginBottom: 8,
+    marginBottom: 12,
   },
   contextMenuItem: {
-    paddingVertical: 8,
+    minHeight: 44,
+    paddingVertical: 10,
+    justifyContent: 'center',
   },
   contextMenuItemText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 15,
   },
   contextMenuCancel: {
     marginTop: 12,
+    minHeight: 44,
     paddingVertical: 10,
     alignItems: 'center',
     borderRadius: 999,
     backgroundColor: '#ffffff22',
+    justifyContent: 'center',
   },
   contextMenuCancelText: {
     color: '#fff',
@@ -630,21 +752,28 @@ const styles = StyleSheet.create({
   },
   renameModal: {
     width: '80%',
-    borderRadius: 16,
-    padding: 16,
-    backgroundColor: '#1e1e1e',
+    borderRadius: 20,
+    padding: 20,
+    backgroundColor: '#1a1a2e',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 10,
   },
   renameTitle: {
-    marginBottom: 8,
+    marginBottom: 12,
   },
   renameInput: {
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#666',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderColor: '#444',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     color: '#fff',
-    marginBottom: 12,
+    marginBottom: 16,
+    fontSize: 15,
+    backgroundColor: '#ffffff0a',
   },
   renameButtonsRow: {
     flexDirection: 'row',
@@ -652,23 +781,30 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   renameButtonSecondary: {
+    minWidth: 44,
+    minHeight: 44,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 999,
     backgroundColor: '#ffffff22',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   renameButtonSecondaryText: {
     color: '#fff',
   },
   renameButtonPrimary: {
+    minWidth: 44,
+    minHeight: 44,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 999,
     backgroundColor: Colors.light.tint,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   renameButtonPrimaryText: {
     color: '#fff',
     fontWeight: '600',
   },
 });
-
