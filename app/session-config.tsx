@@ -29,6 +29,8 @@ const BREAK_OPTIONS = [0, 5, 10, 30];
 
 type SessionConfigParams = {
   presetId?: string;
+  filterPoseIds?: string;
+  filterLabel?: string;
 };
 
 export default function SessionConfigScreen() {
@@ -39,6 +41,18 @@ export default function SessionConfigScreen() {
   const [presetName, setPresetName] = useState('');
   const [presets, setPresets] = useState<SessionPreset[]>([]);
   const [editingPresetId, setEditingPresetId] = useState<string | null>(null);
+
+  // Pre-filtered subject pool from Library
+  const filterPoseIds: string[] | null = params.filterPoseIds
+    ? (() => {
+        try {
+          return JSON.parse(params.filterPoseIds);
+        } catch {
+          return null;
+        }
+      })()
+    : null;
+  const filterLabel = params.filterLabel || null;
 
   useEffect(() => {
     const loadPresetsAndMaybeApplyEditing = async () => {
@@ -163,6 +177,17 @@ export default function SessionConfigScreen() {
         <ThemedText type="title" style={styles.title}>
           {STRINGS.sessionConfig.title}
         </ThemedText>
+
+        {filterLabel && (
+          <View style={styles.filterBanner}>
+            <Text style={styles.filterBannerText}>{filterLabel}</Text>
+            {filterPoseIds && (
+              <Text style={styles.filterBannerCount}>
+                {filterPoseIds.length} {STRINGS.library.sessionSubjectCountLabel}
+              </Text>
+            )}
+          </View>
+        )}
 
         <View style={styles.section}>
           <ThemedText type="subtitle">{STRINGS.sessionConfig.subjectSectionTitle}</ThemedText>
@@ -537,6 +562,23 @@ const styles = StyleSheet.create({
   },
   presetChipText: {
     color: '#fff',
+    fontSize: 12,
+  },
+  filterBanner: {
+    borderRadius: 12,
+    padding: 14,
+    backgroundColor: Colors.light.tint + '33',
+    borderWidth: 1,
+    borderColor: Colors.light.tint,
+    gap: 4,
+  },
+  filterBannerText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  filterBannerCount: {
+    color: '#ccc',
     fontSize: 12,
   },
   startButton: {
