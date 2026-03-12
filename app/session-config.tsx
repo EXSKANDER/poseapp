@@ -16,11 +16,15 @@ import { ThemedView } from '@/components/themed-view';
 import { STRINGS } from '@/constants/strings';
 import { Colors } from '@/constants/theme';
 import {
+  ALL_BODY_REGIONS,
   BUILTIN_PRESETS,
   DEFAULT_SESSION_CONFIG,
   PRESETS_STORAGE_KEY,
   SessionConfig,
   SessionPreset,
+  type BodyRegion,
+  type GridOverlayDivisions,
+  type ModelStyle,
 } from '@/constants/presets';
 
 const DURATION_OPTIONS = [30, 60, 120, 300];
@@ -247,6 +251,178 @@ export default function SessionConfigScreen() {
                 selected={config.background === 'light'}
                 onPress={() => setConfig((prev) => ({ ...prev, background: 'light' }))}
               />
+            </View>
+          </View>
+        </View>
+
+        {/* Phase 5: Model display modes */}
+        <View style={styles.section}>
+          <ThemedText type="subtitle">{STRINGS.sessionConfig.displayModesSectionTitle}</ThemedText>
+
+          <View style={styles.fieldRow}>
+            <ThemedText style={styles.fieldLabel}>
+              {STRINGS.sessionConfig.modelStyleLabel}
+            </ThemedText>
+            <View style={styles.chipRow}>
+              {(
+                [
+                  { key: 'solid', label: STRINGS.viewer.modelStyleSolid },
+                  { key: 'muscle', label: STRINGS.viewer.modelStyleMuscle },
+                  { key: 'skeleton', label: STRINGS.viewer.modelStyleSkeleton },
+                  { key: 'forms', label: STRINGS.viewer.modelStyleForms },
+                  { key: 'coloured-anatomy', label: STRINGS.viewer.modelStyleColouredAnatomy },
+                ] as { key: ModelStyle; label: string }[]
+              ).map(({ key, label }) => (
+                <Chip
+                  key={key}
+                  label={label}
+                  selected={config.modelStyle === key}
+                  onPress={() => setConfig((prev) => ({ ...prev, modelStyle: key }))}
+                />
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <ThemedText style={styles.fieldLabel}>
+              {STRINGS.sessionConfig.wireframeOverlayLabel}
+            </ThemedText>
+            <Switch
+              value={config.wireframeOverlay}
+              onValueChange={(v) => setConfig((prev) => ({ ...prev, wireframeOverlay: v }))}
+            />
+          </View>
+
+          <View style={styles.fieldRow}>
+            <ThemedText style={styles.fieldLabel}>
+              {STRINGS.sessionConfig.negativeSpaceLabel}
+            </ThemedText>
+            <Switch
+              value={config.negativeSpace}
+              onValueChange={(v) => setConfig((prev) => ({ ...prev, negativeSpace: v }))}
+            />
+          </View>
+
+          <View style={styles.fieldRow}>
+            <ThemedText style={styles.fieldLabel}>
+              {STRINGS.sessionConfig.staticModeLabel}
+            </ThemedText>
+            <Switch
+              value={config.staticMode}
+              onValueChange={(v) => setConfig((prev) => ({ ...prev, staticMode: v }))}
+            />
+          </View>
+
+          <View style={styles.fieldRow}>
+            <ThemedText style={styles.fieldLabel}>
+              {STRINGS.sessionConfig.mirrorLabel}
+            </ThemedText>
+            <Switch
+              value={config.mirrorX}
+              onValueChange={(v) => setConfig((prev) => ({ ...prev, mirrorX: v }))}
+            />
+          </View>
+
+          <LabeledSlider
+            label={STRINGS.sessionConfig.modelOpacityLabel}
+            value={config.modelOpacity}
+            min={0.05}
+            max={1}
+            onChange={(v) => setConfig((prev) => ({ ...prev, modelOpacity: v }))}
+          />
+        </View>
+
+        {/* Phase 5: Overlays & helpers */}
+        <View style={styles.section}>
+          <ThemedText type="subtitle">{STRINGS.sessionConfig.overlaysSectionTitle}</ThemedText>
+
+          <View style={styles.fieldRow}>
+            <ThemedText style={styles.fieldLabel}>
+              {STRINGS.sessionConfig.gridOverlayLabel}
+            </ThemedText>
+            <View style={styles.chipRow}>
+              {(
+                [
+                  { key: 'off', label: STRINGS.viewer.gridOverlayOff },
+                  { key: '4', label: STRINGS.viewer.gridOverlay4 },
+                  { key: '9', label: STRINGS.viewer.gridOverlay9 },
+                  { key: '16', label: STRINGS.viewer.gridOverlay16 },
+                ] as { key: GridOverlayDivisions; label: string }[]
+              ).map(({ key, label }) => (
+                <Chip
+                  key={key}
+                  label={label}
+                  selected={config.gridOverlay === key}
+                  onPress={() => setConfig((prev) => ({ ...prev, gridOverlay: key }))}
+                />
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <ThemedText style={styles.fieldLabel}>
+              {STRINGS.sessionConfig.boundingBoxLabel}
+            </ThemedText>
+            <Switch
+              value={config.showBoundingBox}
+              onValueChange={(v) => setConfig((prev) => ({ ...prev, showBoundingBox: v }))}
+            />
+          </View>
+
+          <View style={styles.fieldRow}>
+            <ThemedText style={styles.fieldLabel}>
+              {STRINGS.sessionConfig.floorPlaneLabel}
+            </ThemedText>
+            <Switch
+              value={config.showFloorPlane}
+              onValueChange={(v) => setConfig((prev) => ({ ...prev, showFloorPlane: v }))}
+            />
+          </View>
+
+          <View style={styles.fieldRow}>
+            <ThemedText style={styles.fieldLabel}>
+              {STRINGS.sessionConfig.poseShadowLabel}
+            </ThemedText>
+            <Switch
+              value={config.showPoseShadow}
+              onValueChange={(v) => setConfig((prev) => ({ ...prev, showPoseShadow: v }))}
+            />
+          </View>
+
+          <View style={styles.fieldRow}>
+            <ThemedText style={styles.fieldLabel}>
+              {STRINGS.sessionConfig.limbSelectionLabel}
+            </ThemedText>
+            <View style={styles.chipRow}>
+              {ALL_BODY_REGIONS.map((region) => {
+                const labels: Record<BodyRegion, string> = {
+                  head: STRINGS.viewer.regionHead,
+                  torso: STRINGS.viewer.regionTorso,
+                  'left-arm': STRINGS.viewer.regionLeftArm,
+                  'right-arm': STRINGS.viewer.regionRightArm,
+                  'left-leg': STRINGS.viewer.regionLeftLeg,
+                  'right-leg': STRINGS.viewer.regionRightLeg,
+                };
+                return (
+                  <Chip
+                    key={region}
+                    label={labels[region]}
+                    selected={config.selectedBodyRegions.includes(region)}
+                    onPress={() =>
+                      setConfig((prev) => {
+                        const has = prev.selectedBodyRegions.includes(region);
+                        if (has && prev.selectedBodyRegions.length <= 1) return prev;
+                        return {
+                          ...prev,
+                          selectedBodyRegions: has
+                            ? prev.selectedBodyRegions.filter((r) => r !== region)
+                            : [...prev.selectedBodyRegions, region],
+                        };
+                      })
+                    }
+                  />
+                );
+              })}
             </View>
           </View>
         </View>
