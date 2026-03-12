@@ -14,6 +14,16 @@ export type BodyRegion =
   | 'left-leg'
   | 'right-leg';
 
+export type PerspectiveMode =
+  | 'flat'
+  | '1-point'
+  | '2-point'
+  | '3-point'
+  | '4-point'
+  | 'fisheye';
+
+export type TransitionStyle = 'cut' | 'fade' | 'countdown';
+
 export const ALL_BODY_REGIONS: BodyRegion[] = [
   'head',
   'torso',
@@ -46,6 +56,10 @@ export type SessionConfig = {
   mirrorX: boolean;
   staticMode: boolean;
   selectedBodyRegions: BodyRegion[];
+  // Phase 6: Perspective & transitions
+  perspectiveMode: PerspectiveMode;
+  transitionStyle: TransitionStyle;
+  audioCue: boolean;
 };
 
 export type SessionPreset = {
@@ -87,6 +101,10 @@ export const DEFAULT_SESSION_CONFIG: SessionConfig = {
   mirrorX: false,
   staticMode: false,
   selectedBodyRegions: [...ALL_BODY_REGIONS],
+  // Phase 6 defaults
+  perspectiveMode: '1-point',
+  transitionStyle: 'cut',
+  audioCue: false,
 };
 
 export const DEFAULT_PRESET_LAYOUT: PresetLayoutState = {

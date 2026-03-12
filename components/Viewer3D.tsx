@@ -9,7 +9,12 @@ import {
 import { GLView } from 'expo-gl';
 import { Renderer } from 'expo-three';
 import * as THREE from 'three';
-import type { ModelStyle, GridOverlayDivisions, BodyRegion } from '@/constants/presets';
+import type {
+  ModelStyle,
+  GridOverlayDivisions,
+  BodyRegion,
+  PerspectiveMode,
+} from '@/constants/presets';
 
 type Viewer3DProps = {
   directionalIntensity: number;
@@ -27,6 +32,10 @@ type Viewer3DProps = {
   modelOpacity?: number;
   mirrorX?: boolean;
   selectedBodyRegions?: BodyRegion[];
+  // Phase 6 props
+  perspectiveMode?: PerspectiveMode;
+  /** 0–1, used for fade transitions — controls overall scene opacity */
+  sceneOpacity?: number;
 };
 
 // Body region colours for coloured anatomy mode
@@ -43,6 +52,82 @@ const ANATOMY_COLOURS: Record<string, number> = {
 const SKIN_COLOUR = 0xdeb896;
 const MUSCLE_COLOUR = 0xcc4455;
 const BONE_COLOUR = 0xe8e8d0;
+
+/** Camera configuration for each perspective mode */
+type CameraConfig = {
+  type: 'perspective' | 'orthographic';
+  fov?: number;
+  position: [number, number, number];
+  lookAt: [number, number, number];
+};
+
+function getCameraConfig(mode: PerspectiveMode): CameraConfig {
+  switch (mode) {
+    case 'flat':
+      return {
+        type: 'orthographic',
+        position: [0, 0, 3],
+        lookAt: [0, 0, 0],
+      };
+    case '1-point':
+      return {
+        type: 'perspective',
+        fov: 50,
+        position: [0, 0, 3],
+        lookAt: [0, 0, 0],
+      };
+    case '2-point':
+      return {
+        type: 'perspective',
+        fov: 60,
+        position: [2, 0.5, 2],
+        lookAt: [0, 0, 0],
+      };
+    case '3-point':
+      return {
+        type: 'perspective',
+        fov: 75,
+        position: [1.5, 2.5, 2],
+        lookAt: [0, -0.3, 0],
+      };
+    case '4-point':
+      return {
+        type: 'perspective',
+        fov: 100,
+        position: [0, 0, 2.5],
+        lookAt: [0, 0, 0],
+      };
+    case 'fisheye':
+      return {
+        type: 'perspective',
+        fov: 90,
+        position: [0, 0, 2.5],
+        lookAt: [0, 0, 0],
+      };
+    default:
+      return {
+        type: 'perspective',
+        fov: 50,
+        position: [0, 0, 3],
+        lookAt: [0, 0, 0],
+      };
+  }
+}
+
+/**
+ * Returns a distortion strength for barrel/curvilinear post-processing.
+ * 0 = no distortion.
+ */
+function getDistortionStrength(mode: PerspectiveMode): number {
+  switch (mode) {
+    case '4-point':
+      return 0.35;
+    case 'fisheye':
+      return 0.7;
+    default:
+      return 0;
+  }
+}
 
 function createBodyPart(
   geometry: THREE.BufferGeometry,
@@ -293,6 +378,38 @@ function createWireframeOverlay(sourceGroup: THREE.Group): THREE.Group {
   return wireGroup;
 }
 
+/**
+ * Barrel distortion vertex/fragment shaders for 4-point and fisheye modes.
+ * Renders the scene to a texture, then applies distortion as a full-screen pass.
+ */
+const DISTORTION_VERTEX_SHADER = `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position, 1.0);
+}
+`;
+
+const DISTORTION_FRAGMENT_SHADER = `
+precision mediump float;
+uniform sampler2D tDiffuse;
+uniform float strength;
+varying vec2 vUv;
+
+void main() {
+  vec2 centered = vUv - 0.5;
+  float dist = length(centered);
+  float distortion = 1.0 + strength * dist * dist;
+  vec2 distorted = centered * distortion + 0.5;
+
+  if (distorted.x < 0.0 || distorted.x > 1.0 || distorted.y < 0.0 || distorted.y > 1.0) {
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+  } else {
+    gl_FragColor = texture2D(tDiffuse, distorted);
+  }
+}
+`;
+
 export function Viewer3D({
   directionalIntensity,
   ambientIntensity,
@@ -308,6 +425,8 @@ export function Viewer3D({
   modelOpacity = 1,
   mirrorX = false,
   selectedBodyRegions = ['head', 'torso', 'left-arm', 'right-arm', 'left-leg', 'right-leg'],
+  perspectiveMode = '1-point',
+  sceneOpacity = 1,
 }: Viewer3DProps) {
   const layoutRef = useRef({ width: 0, height: 0 });
   const rotationRef = useRef({ x: 0, y: 0 });
@@ -347,6 +466,8 @@ export function Viewer3D({
     showGrid,
     gridOverlay,
     backgroundColor,
+    perspectiveMode,
+    sceneOpacity,
   });
   propsRef.current = {
     modelStyle,
@@ -361,6 +482,8 @@ export function Viewer3D({
     showGrid,
     gridOverlay,
     backgroundColor,
+    perspectiveMode,
+    sceneOpacity,
   };
 
   const handleLayout = useCallback((event: LayoutChangeEvent) => {
@@ -371,6 +494,7 @@ export function Viewer3D({
   const onContextCreate = useCallback(
     async (gl: ExpoWebGLRenderingContext) => {
       const { drawingBufferWidth: width, drawingBufferHeight: height } = gl;
+      const aspect = width / height;
 
       const renderer = new Renderer({ gl });
       renderer.setSize(width, height);
@@ -381,8 +505,53 @@ export function Viewer3D({
       const scene = new THREE.Scene();
       sceneRef.current = scene;
 
-      const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
-      camera.position.set(0, 0, 3);
+      // Create cameras for different modes
+      const camConfig = getCameraConfig(perspectiveMode);
+
+      let activeCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
+      const perspCam = new THREE.PerspectiveCamera(camConfig.fov ?? 50, aspect, 0.1, 1000);
+      const orthoFrustum = 2;
+      const orthoCam = new THREE.OrthographicCamera(
+        -orthoFrustum * aspect,
+        orthoFrustum * aspect,
+        orthoFrustum,
+        -orthoFrustum,
+        0.1,
+        1000,
+      );
+
+      if (camConfig.type === 'orthographic') {
+        activeCamera = orthoCam;
+      } else {
+        activeCamera = perspCam;
+      }
+      activeCamera.position.set(...camConfig.position);
+      activeCamera.lookAt(new THREE.Vector3(...camConfig.lookAt));
+
+      // --- Distortion post-processing setup ---
+      const distortionStrength = getDistortionStrength(perspectiveMode);
+      let renderTarget: THREE.WebGLRenderTarget | null = null;
+      let distortionQuad: THREE.Mesh | null = null;
+      let distortionScene: THREE.Scene | null = null;
+      let distortionCamera: THREE.OrthographicCamera | null = null;
+      let distortionMaterial: THREE.ShaderMaterial | null = null;
+
+      if (distortionStrength > 0) {
+        renderTarget = new THREE.WebGLRenderTarget(width, height);
+        distortionMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+            tDiffuse: { value: renderTarget.texture },
+            strength: { value: distortionStrength },
+          },
+          vertexShader: DISTORTION_VERTEX_SHADER,
+          fragmentShader: DISTORTION_FRAGMENT_SHADER,
+        });
+        const quadGeo = new THREE.PlaneGeometry(2, 2);
+        distortionQuad = new THREE.Mesh(quadGeo, distortionMaterial);
+        distortionScene = new THREE.Scene();
+        distortionScene.add(distortionQuad);
+        distortionCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      }
 
       // Lights
       const ambientLight = new THREE.AmbientLight(0xffffff, ambientIntensity);
@@ -452,6 +621,7 @@ export function Viewer3D({
       let prevSelectedRegions = [...selectedBodyRegions];
       let prevWireframe = wireframeOverlay;
       let prevMirrorX = mirrorX;
+      let prevPerspectiveMode = perspectiveMode;
 
       const clock = new THREE.Clock();
 
@@ -467,6 +637,56 @@ export function Viewer3D({
         }
         if (directionalLightRef.current) {
           directionalLightRef.current.intensity = directionalIntensity;
+        }
+
+        // Handle perspective mode changes
+        if (p.perspectiveMode !== prevPerspectiveMode) {
+          const newConfig = getCameraConfig(p.perspectiveMode);
+          const newDistortion = getDistortionStrength(p.perspectiveMode);
+
+          if (newConfig.type === 'orthographic') {
+            activeCamera = orthoCam;
+          } else {
+            if (newConfig.fov && perspCam instanceof THREE.PerspectiveCamera) {
+              perspCam.fov = newConfig.fov;
+              perspCam.updateProjectionMatrix();
+            }
+            activeCamera = perspCam;
+          }
+          activeCamera.position.set(...newConfig.position);
+          activeCamera.lookAt(new THREE.Vector3(...newConfig.lookAt));
+
+          // Update distortion
+          if (newDistortion > 0) {
+            if (!renderTarget) {
+              renderTarget = new THREE.WebGLRenderTarget(width, height);
+              distortionMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                  tDiffuse: { value: renderTarget.texture },
+                  strength: { value: newDistortion },
+                },
+                vertexShader: DISTORTION_VERTEX_SHADER,
+                fragmentShader: DISTORTION_FRAGMENT_SHADER,
+              });
+              const quadGeo = new THREE.PlaneGeometry(2, 2);
+              distortionQuad = new THREE.Mesh(quadGeo, distortionMaterial);
+              distortionScene = new THREE.Scene();
+              distortionScene.add(distortionQuad);
+              distortionCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+            }
+            if (distortionMaterial) {
+              distortionMaterial.uniforms.strength.value = newDistortion;
+            }
+          } else {
+            // Disable distortion
+            renderTarget = null;
+            distortionQuad = null;
+            distortionScene = null;
+            distortionCamera = null;
+            distortionMaterial = null;
+          }
+
+          prevPerspectiveMode = p.perspectiveMode;
         }
 
         // Rebuild model if style, opacity, or regions changed
@@ -589,13 +809,24 @@ export function Viewer3D({
           wireGroupRef.current.rotation.y = rotationRef.current.y;
         }
 
-        // Camera
-        camera.position.z = 3 / zoomRef.current;
-        camera.position.x = panRef.current.x;
-        camera.position.y = panRef.current.y;
-        camera.lookAt(0, 0, 0);
+        // Camera position with zoom/pan applied
+        const config = getCameraConfig(p.perspectiveMode);
+        const baseZ = config.position[2];
+        activeCamera.position.z = baseZ / zoomRef.current;
+        activeCamera.position.x = config.position[0] + panRef.current.x;
+        activeCamera.position.y = config.position[1] + panRef.current.y;
+        activeCamera.lookAt(new THREE.Vector3(...config.lookAt));
 
-        renderer.render(scene, camera);
+        // Render with or without distortion post-processing
+        if (renderTarget && distortionScene && distortionCamera) {
+          renderer.setRenderTarget(renderTarget);
+          renderer.render(scene, activeCamera);
+          renderer.setRenderTarget(null);
+          renderer.render(distortionScene, distortionCamera);
+        } else {
+          renderer.render(scene, activeCamera);
+        }
+
         gl.endFrameEXP();
       };
 
@@ -683,6 +914,16 @@ export function Viewer3D({
     <View style={styles.container} onLayout={handleLayout}>
       <GLView style={StyleSheet.absoluteFill} onContextCreate={onContextCreate} />
       <View style={StyleSheet.absoluteFill} {...panResponder.panHandlers} />
+      {/* Fade overlay for transition opacity */}
+      {sceneOpacity < 1 && (
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            { backgroundColor: `rgba(0,0,0,${1 - sceneOpacity})` },
+          ]}
+          pointerEvents="none"
+        />
+      )}
       {/* 2D Grid overlay drawn on top of 3D scene */}
       {gridOverlay !== 'off' && <GridOverlay2D divisions={gridOverlay} />}
     </View>

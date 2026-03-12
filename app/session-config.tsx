@@ -25,6 +25,8 @@ import {
   type BodyRegion,
   type GridOverlayDivisions,
   type ModelStyle,
+  type PerspectiveMode,
+  type TransitionStyle,
 } from '@/constants/presets';
 
 const DURATION_OPTIONS = [30, 60, 120, 300];
@@ -177,7 +179,7 @@ export default function SessionConfigScreen() {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <ThemedText type="title" style={styles.title}>
           {STRINGS.sessionConfig.title}
         </ThemedText>
@@ -193,9 +195,8 @@ export default function SessionConfigScreen() {
           </View>
         )}
 
-        <View style={styles.section}>
-          <ThemedText type="subtitle">{STRINGS.sessionConfig.subjectSectionTitle}</ThemedText>
-
+        {/* Subject Selection */}
+        <SectionCard icon="👤" title={STRINGS.sessionConfig.subjectSectionTitle}>
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>{STRINGS.sessionConfig.genderLabel}</ThemedText>
             <View style={styles.chipRow}>
@@ -216,11 +217,10 @@ export default function SessionConfigScreen() {
               />
             </View>
           </View>
-        </View>
+        </SectionCard>
 
-        <View style={styles.section}>
-          <ThemedText type="subtitle">{STRINGS.sessionConfig.displaySectionTitle}</ThemedText>
-
+        {/* Display Options */}
+        <SectionCard icon="🎨" title={STRINGS.sessionConfig.displaySectionTitle}>
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
               {STRINGS.sessionConfig.showGridLabel}
@@ -228,6 +228,8 @@ export default function SessionConfigScreen() {
             <Switch
               value={config.showGrid}
               onValueChange={(value) => setConfig((prev) => ({ ...prev, showGrid: value }))}
+              trackColor={{ false: '#555', true: Colors.light.tint }}
+              accessibilityLabel="Show ground grid"
             />
           </View>
 
@@ -253,73 +255,82 @@ export default function SessionConfigScreen() {
               />
             </View>
           </View>
-        </View>
+        </SectionCard>
 
-        {/* Phase 5: Model display modes */}
-        <View style={styles.section}>
-          <ThemedText type="subtitle">{STRINGS.sessionConfig.displayModesSectionTitle}</ThemedText>
+        {/* Perspective & Camera */}
+        <SectionCard icon="📷" title={STRINGS.sessionConfig.perspectiveSectionTitle}>
+          <View style={styles.fieldRow}>
+            <ThemedText style={styles.fieldLabel}>
+              {STRINGS.sessionConfig.perspectiveModeLabel}
+            </ThemedText>
+          </View>
+          <View style={styles.chipRowFull}>
+            {(
+              [
+                { key: 'flat', label: STRINGS.viewer.perspectiveFlat },
+                { key: '1-point', label: STRINGS.viewer.perspective1Point },
+                { key: '2-point', label: STRINGS.viewer.perspective2Point },
+                { key: '3-point', label: STRINGS.viewer.perspective3Point },
+                { key: '4-point', label: STRINGS.viewer.perspective4Point },
+                { key: 'fisheye', label: STRINGS.viewer.perspectiveFisheye },
+              ] as { key: PerspectiveMode; label: string }[]
+            ).map(({ key, label }) => (
+              <Chip
+                key={key}
+                label={label}
+                selected={config.perspectiveMode === key}
+                onPress={() => setConfig((prev) => ({ ...prev, perspectiveMode: key }))}
+              />
+            ))}
+          </View>
+        </SectionCard>
 
+        {/* Model Display */}
+        <SectionCard icon="🧍" title={STRINGS.sessionConfig.displayModesSectionTitle}>
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
               {STRINGS.sessionConfig.modelStyleLabel}
             </ThemedText>
-            <View style={styles.chipRow}>
-              {(
-                [
-                  { key: 'solid', label: STRINGS.viewer.modelStyleSolid },
-                  { key: 'muscle', label: STRINGS.viewer.modelStyleMuscle },
-                  { key: 'skeleton', label: STRINGS.viewer.modelStyleSkeleton },
-                  { key: 'forms', label: STRINGS.viewer.modelStyleForms },
-                  { key: 'coloured-anatomy', label: STRINGS.viewer.modelStyleColouredAnatomy },
-                ] as { key: ModelStyle; label: string }[]
-              ).map(({ key, label }) => (
-                <Chip
-                  key={key}
-                  label={label}
-                  selected={config.modelStyle === key}
-                  onPress={() => setConfig((prev) => ({ ...prev, modelStyle: key }))}
-                />
-              ))}
-            </View>
+          </View>
+          <View style={styles.chipRowFull}>
+            {(
+              [
+                { key: 'solid', label: STRINGS.viewer.modelStyleSolid },
+                { key: 'muscle', label: STRINGS.viewer.modelStyleMuscle },
+                { key: 'skeleton', label: STRINGS.viewer.modelStyleSkeleton },
+                { key: 'forms', label: STRINGS.viewer.modelStyleForms },
+                { key: 'coloured-anatomy', label: STRINGS.viewer.modelStyleColouredAnatomy },
+              ] as { key: ModelStyle; label: string }[]
+            ).map(({ key, label }) => (
+              <Chip
+                key={key}
+                label={label}
+                selected={config.modelStyle === key}
+                onPress={() => setConfig((prev) => ({ ...prev, modelStyle: key }))}
+              />
+            ))}
           </View>
 
-          <View style={styles.fieldRow}>
-            <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.wireframeOverlayLabel}
-            </ThemedText>
-            <Switch
+          <View style={styles.toggleRow}>
+            <ToggleRow
+              label={STRINGS.sessionConfig.wireframeOverlayLabel}
               value={config.wireframeOverlay}
-              onValueChange={(v) => setConfig((prev) => ({ ...prev, wireframeOverlay: v }))}
+              onToggle={(v) => setConfig((prev) => ({ ...prev, wireframeOverlay: v }))}
             />
-          </View>
-
-          <View style={styles.fieldRow}>
-            <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.negativeSpaceLabel}
-            </ThemedText>
-            <Switch
+            <ToggleRow
+              label={STRINGS.sessionConfig.negativeSpaceLabel}
               value={config.negativeSpace}
-              onValueChange={(v) => setConfig((prev) => ({ ...prev, negativeSpace: v }))}
+              onToggle={(v) => setConfig((prev) => ({ ...prev, negativeSpace: v }))}
             />
-          </View>
-
-          <View style={styles.fieldRow}>
-            <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.staticModeLabel}
-            </ThemedText>
-            <Switch
+            <ToggleRow
+              label={STRINGS.sessionConfig.staticModeLabel}
               value={config.staticMode}
-              onValueChange={(v) => setConfig((prev) => ({ ...prev, staticMode: v }))}
+              onToggle={(v) => setConfig((prev) => ({ ...prev, staticMode: v }))}
             />
-          </View>
-
-          <View style={styles.fieldRow}>
-            <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.mirrorLabel}
-            </ThemedText>
-            <Switch
+            <ToggleRow
+              label={STRINGS.sessionConfig.mirrorLabel}
               value={config.mirrorX}
-              onValueChange={(v) => setConfig((prev) => ({ ...prev, mirrorX: v }))}
+              onToggle={(v) => setConfig((prev) => ({ ...prev, mirrorX: v }))}
             />
           </View>
 
@@ -330,12 +341,10 @@ export default function SessionConfigScreen() {
             max={1}
             onChange={(v) => setConfig((prev) => ({ ...prev, modelOpacity: v }))}
           />
-        </View>
+        </SectionCard>
 
-        {/* Phase 5: Overlays & helpers */}
-        <View style={styles.section}>
-          <ThemedText type="subtitle">{STRINGS.sessionConfig.overlaysSectionTitle}</ThemedText>
-
+        {/* Overlays & Helpers */}
+        <SectionCard icon="📐" title={STRINGS.sessionConfig.overlaysSectionTitle}>
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
               {STRINGS.sessionConfig.gridOverlayLabel}
@@ -359,33 +368,21 @@ export default function SessionConfigScreen() {
             </View>
           </View>
 
-          <View style={styles.fieldRow}>
-            <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.boundingBoxLabel}
-            </ThemedText>
-            <Switch
+          <View style={styles.toggleRow}>
+            <ToggleRow
+              label={STRINGS.sessionConfig.boundingBoxLabel}
               value={config.showBoundingBox}
-              onValueChange={(v) => setConfig((prev) => ({ ...prev, showBoundingBox: v }))}
+              onToggle={(v) => setConfig((prev) => ({ ...prev, showBoundingBox: v }))}
             />
-          </View>
-
-          <View style={styles.fieldRow}>
-            <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.floorPlaneLabel}
-            </ThemedText>
-            <Switch
+            <ToggleRow
+              label={STRINGS.sessionConfig.floorPlaneLabel}
               value={config.showFloorPlane}
-              onValueChange={(v) => setConfig((prev) => ({ ...prev, showFloorPlane: v }))}
+              onToggle={(v) => setConfig((prev) => ({ ...prev, showFloorPlane: v }))}
             />
-          </View>
-
-          <View style={styles.fieldRow}>
-            <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.poseShadowLabel}
-            </ThemedText>
-            <Switch
+            <ToggleRow
+              label={STRINGS.sessionConfig.poseShadowLabel}
               value={config.showPoseShadow}
-              onValueChange={(v) => setConfig((prev) => ({ ...prev, showPoseShadow: v }))}
+              onToggle={(v) => setConfig((prev) => ({ ...prev, showPoseShadow: v }))}
             />
           </View>
 
@@ -393,43 +390,42 @@ export default function SessionConfigScreen() {
             <ThemedText style={styles.fieldLabel}>
               {STRINGS.sessionConfig.limbSelectionLabel}
             </ThemedText>
-            <View style={styles.chipRow}>
-              {ALL_BODY_REGIONS.map((region) => {
-                const labels: Record<BodyRegion, string> = {
-                  head: STRINGS.viewer.regionHead,
-                  torso: STRINGS.viewer.regionTorso,
-                  'left-arm': STRINGS.viewer.regionLeftArm,
-                  'right-arm': STRINGS.viewer.regionRightArm,
-                  'left-leg': STRINGS.viewer.regionLeftLeg,
-                  'right-leg': STRINGS.viewer.regionRightLeg,
-                };
-                return (
-                  <Chip
-                    key={region}
-                    label={labels[region]}
-                    selected={config.selectedBodyRegions.includes(region)}
-                    onPress={() =>
-                      setConfig((prev) => {
-                        const has = prev.selectedBodyRegions.includes(region);
-                        if (has && prev.selectedBodyRegions.length <= 1) return prev;
-                        return {
-                          ...prev,
-                          selectedBodyRegions: has
-                            ? prev.selectedBodyRegions.filter((r) => r !== region)
-                            : [...prev.selectedBodyRegions, region],
-                        };
-                      })
-                    }
-                  />
-                );
-              })}
-            </View>
           </View>
-        </View>
+          <View style={styles.chipRowFull}>
+            {ALL_BODY_REGIONS.map((region) => {
+              const labels: Record<BodyRegion, string> = {
+                head: STRINGS.viewer.regionHead,
+                torso: STRINGS.viewer.regionTorso,
+                'left-arm': STRINGS.viewer.regionLeftArm,
+                'right-arm': STRINGS.viewer.regionRightArm,
+                'left-leg': STRINGS.viewer.regionLeftLeg,
+                'right-leg': STRINGS.viewer.regionRightLeg,
+              };
+              return (
+                <Chip
+                  key={region}
+                  label={labels[region]}
+                  selected={config.selectedBodyRegions.includes(region)}
+                  onPress={() =>
+                    setConfig((prev) => {
+                      const has = prev.selectedBodyRegions.includes(region);
+                      if (has && prev.selectedBodyRegions.length <= 1) return prev;
+                      return {
+                        ...prev,
+                        selectedBodyRegions: has
+                          ? prev.selectedBodyRegions.filter((r) => r !== region)
+                          : [...prev.selectedBodyRegions, region],
+                      };
+                    })
+                  }
+                />
+              );
+            })}
+          </View>
+        </SectionCard>
 
-        <View style={styles.section}>
-          <ThemedText type="subtitle">{STRINGS.sessionConfig.lightingSectionTitle}</ThemedText>
-
+        {/* Lighting */}
+        <SectionCard icon="💡" title={STRINGS.sessionConfig.lightingSectionTitle}>
           <LabeledSlider
             label={STRINGS.sessionConfig.directionalLightLabel}
             value={config.directionalIntensity}
@@ -439,7 +435,6 @@ export default function SessionConfigScreen() {
               setConfig((prev) => ({ ...prev, directionalIntensity: value }))
             }
           />
-
           <LabeledSlider
             label={STRINGS.sessionConfig.ambientLightLabel}
             value={config.ambientIntensity}
@@ -447,11 +442,10 @@ export default function SessionConfigScreen() {
             max={2}
             onChange={(value) => setConfig((prev) => ({ ...prev, ambientIntensity: value }))}
           />
-        </View>
+        </SectionCard>
 
-        <View style={styles.section}>
-          <ThemedText type="subtitle">{STRINGS.sessionConfig.timeSectionTitle}</ThemedText>
-
+        {/* Time Options */}
+        <SectionCard icon="⏱" title={STRINGS.sessionConfig.timeSectionTitle}>
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
               {STRINGS.sessionConfig.poseDurationLabel}
@@ -518,29 +512,61 @@ export default function SessionConfigScreen() {
             </View>
           </View>
 
+          <ToggleRow
+            label={STRINGS.sessionConfig.randomOrderLabel}
+            value={config.randomOrder}
+            onToggle={(value) => setConfig((prev) => ({ ...prev, randomOrder: value }))}
+          />
+        </SectionCard>
+
+        {/* Transitions & Audio */}
+        <SectionCard icon="🎬" title={STRINGS.sessionConfig.transitionSectionTitle}>
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.randomOrderLabel}
+              {STRINGS.sessionConfig.transitionStyleLabel}
             </ThemedText>
-            <Switch
-              value={config.randomOrder}
-              onValueChange={(value) => setConfig((prev) => ({ ...prev, randomOrder: value }))}
-            />
+            <View style={styles.chipRow}>
+              {(
+                [
+                  { key: 'cut', label: STRINGS.sessionConfig.transitionCut },
+                  { key: 'fade', label: STRINGS.sessionConfig.transitionFade },
+                  { key: 'countdown', label: STRINGS.sessionConfig.transitionCountdown },
+                ] as { key: TransitionStyle; label: string }[]
+              ).map(({ key, label }) => (
+                <Chip
+                  key={key}
+                  label={label}
+                  selected={config.transitionStyle === key}
+                  onPress={() => setConfig((prev) => ({ ...prev, transitionStyle: key }))}
+                />
+              ))}
+            </View>
           </View>
-        </View>
 
-        <View style={styles.section}>
-          <ThemedText type="subtitle">{STRINGS.sessionConfig.presetsSectionTitle}</ThemedText>
+          <ToggleRow
+            label={STRINGS.sessionConfig.audioCueLabel}
+            value={config.audioCue}
+            onToggle={(v) => setConfig((prev) => ({ ...prev, audioCue: v }))}
+          />
+        </SectionCard>
 
+        {/* Presets */}
+        <SectionCard icon="💾" title={STRINGS.sessionConfig.presetsSectionTitle}>
           <View style={styles.presetRow}>
             <TextInput
               value={presetName}
               onChangeText={setPresetName}
               placeholder={STRINGS.sessionConfig.presetNameLabel}
-              placeholderTextColor="#888"
+              placeholderTextColor="#777"
               style={styles.presetInput}
+              accessibilityLabel="Preset name"
             />
-            <Pressable style={styles.primaryButton} onPress={handleSavePreset}>
+            <Pressable
+              style={styles.primaryButton}
+              onPress={handleSavePreset}
+              accessibilityLabel="Save preset"
+              accessibilityRole="button"
+            >
               <Text style={styles.primaryButtonText}>
                 {editingPresetId
                   ? STRINGS.sessionConfig.savePresetAsNewButton
@@ -548,7 +574,12 @@ export default function SessionConfigScreen() {
               </Text>
             </Pressable>
             {editingPresetId && (
-              <Pressable style={styles.secondaryButton} onPress={handleUpdatePreset}>
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={handleUpdatePreset}
+                accessibilityLabel="Update preset"
+                accessibilityRole="button"
+              >
                 <Text style={styles.secondaryButtonText}>
                   {STRINGS.sessionConfig.updatePresetButton}
                 </Text>
@@ -563,19 +594,53 @@ export default function SessionConfigScreen() {
                   key={preset.id}
                   style={styles.presetChip}
                   onPress={() => applyPreset(preset)}
+                  accessibilityLabel={`Load ${preset.name} preset`}
+                  accessibilityRole="button"
                 >
                   <Text style={styles.presetChipText}>{preset.name}</Text>
                 </Pressable>
               ))}
             </View>
           )}
-        </View>
+        </SectionCard>
 
-        <Pressable style={styles.startButton} onPress={handleStartSession}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.startButton,
+            pressed && styles.startButtonPressed,
+          ]}
+          onPress={handleStartSession}
+          accessibilityLabel="Start practice session"
+          accessibilityRole="button"
+        >
+          <Text style={styles.startButtonIcon}>▶</Text>
           <Text style={styles.startButtonText}>{STRINGS.sessionConfig.startSessionButton}</Text>
         </Pressable>
       </ScrollView>
     </ThemedView>
+  );
+}
+
+/** Section card with icon and title header */
+function SectionCard({
+  icon,
+  title,
+  children,
+}: {
+  icon: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionIcon}>{icon}</Text>
+        <ThemedText type="subtitle" style={styles.sectionTitle}>
+          {title}
+        </ThemedText>
+      </View>
+      {children}
+    </View>
   );
 }
 
@@ -592,13 +657,35 @@ function Chip({ label, selected, onPress }: ChipProps) {
       style={[
         styles.chip,
         {
-          backgroundColor: selected ? Colors.light.tint : '#ffffff11',
-          borderColor: selected ? Colors.light.tint : '#666',
+          backgroundColor: selected ? Colors.light.tint : '#ffffff0d',
+          borderColor: selected ? Colors.light.tint : '#555',
         },
       ]}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
     >
-      <Text style={styles.chipText}>{label}</Text>
+      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
     </Pressable>
+  );
+}
+
+type ToggleRowProps = {
+  label: string;
+  value: boolean;
+  onToggle: (value: boolean) => void;
+};
+
+function ToggleRow({ label, value, onToggle }: ToggleRowProps) {
+  return (
+    <View style={styles.fieldRow}>
+      <ThemedText style={styles.fieldLabel}>{label}</ThemedText>
+      <Switch
+        value={value}
+        onValueChange={onToggle}
+        trackColor={{ false: '#555', true: Colors.light.tint }}
+        accessibilityLabel={label}
+      />
+    </View>
   );
 }
 
@@ -623,8 +710,9 @@ function LabeledSlider({ label, value, min, max, onChange }: LabeledSliderProps)
         value={value}
         onValueChange={onChange}
         minimumTrackTintColor={Colors.light.tint}
-        maximumTrackTintColor="#666"
+        maximumTrackTintColor="#555"
         thumbTintColor={Colors.light.tint}
+        accessibilityLabel={label}
       />
     </View>
   );
@@ -636,23 +724,41 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 32,
-    gap: 24,
+    paddingBottom: 40,
+    gap: 16,
   },
   title: {
     marginBottom: 8,
   },
   section: {
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
-    backgroundColor: '#00000055',
-    gap: 12,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  sectionIcon: {
+    fontSize: 18,
+  },
+  sectionTitle: {
+    flex: 1,
   },
   fieldRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 8,
+    minHeight: 44,
   },
   fieldLabel: {
     flex: 1,
@@ -665,21 +771,38 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     maxWidth: '60%',
   },
+  chipRowFull: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
   chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    minHeight: 36,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 999,
     borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   chipText: {
+    color: '#ccc',
+    fontSize: 13,
+  },
+  chipTextSelected: {
     color: '#fff',
-    fontSize: 12,
+    fontWeight: '600',
+  },
+  toggleRow: {
+    gap: 0,
   },
   sliderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 12,
     gap: 12,
+    minHeight: 44,
   },
   sliderLabel: {
     flex: 1,
@@ -692,37 +815,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginTop: 8,
+    flexWrap: 'wrap',
   },
   presetInput: {
     flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
+    minWidth: 120,
+    minHeight: 44,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#666',
+    borderColor: '#555',
     color: '#fff',
+    fontSize: 14,
+    backgroundColor: 'rgba(255,255,255,0.04)',
   },
   primaryButton: {
+    minHeight: 44,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 999,
     backgroundColor: Colors.light.tint,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   primaryButtonText: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 13,
   },
   secondaryButton: {
+    minHeight: 44,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 999,
     backgroundColor: '#ffffff22',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   secondaryButtonText: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 13,
   },
   presetList: {
     flexDirection: 'row',
@@ -731,18 +865,21 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   presetChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    minHeight: 36,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 999,
-    backgroundColor: '#ffffff11',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   presetChipText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 13,
   },
   filterBanner: {
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: 16,
+    padding: 16,
     backgroundColor: Colors.light.tint + '33',
     borderWidth: 1,
     borderColor: Colors.light.tint,
@@ -759,10 +896,26 @@ const styles = StyleSheet.create({
   },
   startButton: {
     marginTop: 8,
-    paddingVertical: 14,
-    borderRadius: 999,
+    paddingVertical: 16,
+    borderRadius: 20,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 10,
     backgroundColor: Colors.light.tint,
+    shadowColor: Colors.light.tint,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  startButtonPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
+  startButtonIcon: {
+    color: '#fff',
+    fontSize: 16,
   },
   startButtonText: {
     color: '#fff',
@@ -770,4 +923,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-

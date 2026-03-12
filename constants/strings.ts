@@ -123,6 +123,19 @@ export const STRINGS = {
     regionRightArm: 'R. Arm',
     regionLeftLeg: 'L. Leg',
     regionRightLeg: 'R. Leg',
+    // Phase 6: Perspective modes
+    perspectiveModeLabel: 'Perspective',
+    perspectiveFlat: 'Flat',
+    perspective1Point: '1-Point',
+    perspective2Point: '2-Point',
+    perspective3Point: '3-Point',
+    perspective4Point: '4-Point',
+    perspectiveFisheye: 'Fisheye',
+    // Phase 6: Session info
+    poseCounter: 'Pose {current} of {total}',
+    paused: 'PAUSED',
+    sessionComplete: 'Session Complete',
+    countdownReady: 'Ready',
   },
   common: {
     on: 'On',
@@ -175,5 +188,14 @@ export const STRINGS = {
     limbSelectionLabel: 'Body region selection',
     displayModesSectionTitle: 'Model display',
     overlaysSectionTitle: 'Overlays & helpers',
+    // Phase 6
+    perspectiveSectionTitle: 'Perspective & Camera',
+    perspectiveModeLabel: 'Camera mode',
+    transitionSectionTitle: 'Transitions & Audio',
+    transitionStyleLabel: 'Transition style',
+    transitionCut: 'Cut',
+    transitionFade: 'Fade',
+    transitionCountdown: 'Countdown',
+    audioCueLabel: 'Audio cue on pose change',
   },
 };
