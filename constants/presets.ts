@@ -2,6 +2,27 @@ import { STRINGS } from '@/constants/strings';
 
 export type GenderOption = 'male' | 'female' | 'both';
 
+export type ModelStyle = 'solid' | 'muscle' | 'skeleton' | 'forms' | 'coloured-anatomy';
+
+export type GridOverlayDivisions = 'off' | '4' | '9' | '16';
+
+export type BodyRegion =
+  | 'head'
+  | 'torso'
+  | 'left-arm'
+  | 'right-arm'
+  | 'left-leg'
+  | 'right-leg';
+
+export const ALL_BODY_REGIONS: BodyRegion[] = [
+  'head',
+  'torso',
+  'left-arm',
+  'right-arm',
+  'left-leg',
+  'right-leg',
+];
+
 export type SessionConfig = {
   poseDurationSeconds: number;
   poseCount: number;
@@ -13,6 +34,18 @@ export type SessionConfig = {
   background: 'dark' | 'mid' | 'light';
   directionalIntensity: number;
   ambientIntensity: number;
+  // Phase 5: Display modes
+  modelStyle: ModelStyle;
+  wireframeOverlay: boolean;
+  negativeSpace: boolean;
+  gridOverlay: GridOverlayDivisions;
+  showBoundingBox: boolean;
+  showFloorPlane: boolean;
+  showPoseShadow: boolean;
+  modelOpacity: number;
+  mirrorX: boolean;
+  staticMode: boolean;
+  selectedBodyRegions: BodyRegion[];
 };
 
 export type SessionPreset = {
@@ -42,6 +75,18 @@ export const DEFAULT_SESSION_CONFIG: SessionConfig = {
   background: 'dark',
   directionalIntensity: 1,
   ambientIntensity: 0.4,
+  // Phase 5 defaults
+  modelStyle: 'solid',
+  wireframeOverlay: false,
+  negativeSpace: false,
+  gridOverlay: 'off',
+  showBoundingBox: false,
+  showFloorPlane: false,
+  showPoseShadow: false,
+  modelOpacity: 1,
+  mirrorX: false,
+  staticMode: false,
+  selectedBodyRegions: [...ALL_BODY_REGIONS],
 };
 
 export const DEFAULT_PRESET_LAYOUT: PresetLayoutState = {
