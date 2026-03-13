@@ -1,13 +1,16 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { useEffect, useState } from 'react';
-import { I18nManager } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { I18nManager, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { PreferencesProvider, useUserPreferences } from '@/hooks/use-user-preferences';
+import { STORAGE_KEYS } from '@/constants/storage-keys';
+import { setupNotificationChannels } from '@/utils/notifications';
 import '@/i18n';
 import { loadSavedLanguage } from '@/i18n';
 import i18n from '@/i18n';
@@ -20,13 +23,48 @@ function RootLayoutInner() {
   const { t } = useTranslation();
   const systemColorScheme = useColorScheme();
   const { preferences, isLoaded } = useUserPreferences();
+  const router = useRouter();
+  const segments = useSegments();
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   const effectiveScheme =
     preferences.theme === 'system'
       ? (systemColorScheme ?? 'dark')
       : preferences.theme;
 
-  if (!isLoaded) {
+  // Check onboarding status
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const done = await AsyncStorage.getItem(STORAGE_KEYS.onboardingComplete);
+        setNeedsOnboarding(done !== 'true');
+      } catch {
+        setNeedsOnboarding(true);
+      }
+      setOnboardingChecked(true);
+    };
+    if (isLoaded) {
+      checkOnboarding();
+    }
+  }, [isLoaded]);
+
+  // Redirect to onboarding if needed
+  useEffect(() => {
+    if (!onboardingChecked) return;
+    if (needsOnboarding && segments[0] !== 'onboarding') {
+      router.replace('/onboarding');
+    }
+  }, [onboardingChecked, needsOnboarding, segments, router]);
+
+  // Set up Android notification channels on app start
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      setupNotificationChannels();
+    }
+  }, []);
+
+  if (!isLoaded || !onboardingChecked) {
     return null;
   }
 
@@ -34,6 +72,14 @@ function RootLayoutInner() {
     <ThemeProvider value={effectiveScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="onboarding"
+          options={{
+            headerShown: false,
+            gestureEnabled: false,
+            animation: 'fade',
+          }}
+        />
         <Stack.Screen
           name="viewer"
           options={{
@@ -83,4 +129,3 @@ export default function RootLayout() {
     </PreferencesProvider>
   );
 }
-

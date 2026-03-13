@@ -21,7 +21,12 @@ type SubjectCardProps = {
   onLongPress: () => void;
 };
 
-export function SubjectCard({ pose, isFavourite, onPress, onLongPress }: SubjectCardProps) {
+export const SubjectCard = React.memo(function SubjectCard({
+  pose,
+  isFavourite,
+  onPress,
+  onLongPress,
+}: SubjectCardProps) {
   const { t } = useTranslation();
   const primaryCategory = pose.category[0];
   const categoryLabel = primaryCategory ? t(CATEGORY_KEY_MAP[primaryCategory]) : '';
@@ -32,11 +37,17 @@ export function SubjectCard({ pose, isFavourite, onPress, onLongPress }: Subject
       onPress={onPress}
       onLongPress={onLongPress}
       delayLongPress={400}
+      accessibilityRole="button"
+      accessibilityLabel={`${pose.name}, ${categoryLabel}${isFavourite ? ', favourited' : ''}`}
+      accessibilityHint="Tap to view, long press for options"
     >
-      <View style={[styles.thumbnail, { backgroundColor: pose.thumbnailFile }]}>
+      <View
+        style={[styles.thumbnail, { backgroundColor: pose.thumbnailFile }]}
+        accessibilityLabel={`${pose.name} thumbnail`}
+      >
         <Text style={styles.thumbnailText}>{pose.name}</Text>
         {isFavourite && (
-          <View style={styles.heartBadge}>
+          <View style={styles.heartBadge} accessibilityLabel="Favourited">
             <Text style={styles.heartIcon}>&#9829;</Text>
           </View>
         )}
@@ -51,7 +62,7 @@ export function SubjectCard({ pose, isFavourite, onPress, onLongPress }: Subject
       </View>
     </Pressable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {
@@ -60,6 +71,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#1e1e1e',
     overflow: 'hidden',
+    minHeight: 44,
   },
   thumbnail: {
     aspectRatio: 1,

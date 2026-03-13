@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Alert,
   Animated,
+  BackHandler,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -199,6 +201,30 @@ export default function ViewerScreen() {
       : parsedConfig?.background === 'mid'
         ? '#3a3a3a'
         : '#2c2c2c';
+
+  // Android hardware back button: prompt "End session?" if active session
+  useEffect(() => {
+    const onBackPress = () => {
+      if (!isFreeStudy && isPlaying && !sessionComplete) {
+        Alert.alert(
+          t('viewer.endSessionTitle'),
+          t('viewer.endSessionMessage'),
+          [
+            { text: t('common.no'), style: 'cancel' },
+            {
+              text: t('common.yes'),
+              style: 'destructive',
+              onPress: () => router.back(),
+            },
+          ],
+        );
+        return true;
+      }
+      return false;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [isFreeStudy, isPlaying, sessionComplete, router, t]);
 
   // Initialize audio
   useEffect(() => {

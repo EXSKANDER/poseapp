@@ -31,6 +31,11 @@ import { SUPPORTED_LANGUAGES, saveLanguage } from '@/i18n';
 import i18n from '@/i18n';
 import type { TransitionStyle } from '@/constants/presets';
 import { STORAGE_KEYS } from '@/constants/storage-keys';
+import {
+  requestNotificationPermission,
+  hasNotificationPermission,
+  setupNotificationChannels,
+} from '@/utils/notifications';
 
 // ─── Section Header ─────────────────────────────────────────────────────────
 
@@ -46,8 +51,12 @@ function SectionHeader({
   isDark: boolean;
 }) {
   return (
-    <View style={[styles.sectionHeader, isDark && styles.sectionHeaderDark]}>
-      <Text style={styles.sectionIcon}>{icon}</Text>
+    <View
+      style={[styles.sectionHeader, isDark && styles.sectionHeaderDark]}
+      accessibilityRole="header"
+      accessibilityLabel={`${title}: ${subtitle}`}
+    >
+      <Text style={styles.sectionIcon} accessibilityElementsHidden>{icon}</Text>
       <View style={styles.sectionHeaderText}>
         <Text style={[styles.sectionTitle, isDark && styles.textLight]}>{title}</Text>
         <Text style={[styles.sectionSubtitle, isDark && styles.textMuted]}>{subtitle}</Text>
@@ -70,7 +79,7 @@ function SettingRow({
   children: React.ReactNode;
 }) {
   return (
-    <View style={styles.settingRow}>
+    <View style={styles.settingRow} accessibilityLabel={description ? `${label}: ${description}` : label}>
       <View style={styles.settingLabelContainer}>
         <Text style={[styles.settingLabel, isDark && styles.textLight]}>{label}</Text>
         {description ? (
@@ -572,7 +581,22 @@ export default function SettingsScreen() {
           <SettingRow label={t('settings.practiceReminders')} isDark={isDark}>
             <ToggleButton
               value={preferences.practiceReminders}
-              onToggle={() => updatePreference('practiceReminders', !preferences.practiceReminders)}
+              onToggle={async () => {
+                if (!preferences.practiceReminders) {
+                  if (Platform.OS === 'android') {
+                    await setupNotificationChannels();
+                  }
+                  const granted = await requestNotificationPermission();
+                  if (!granted) {
+                    Alert.alert(
+                      t('settings.notificationPermissionRequired'),
+                      t('settings.notificationPermissionDesc'),
+                    );
+                    return;
+                  }
+                }
+                updatePreference('practiceReminders', !preferences.practiceReminders);
+              }}
               isDark={isDark}
             />
           </SettingRow>
