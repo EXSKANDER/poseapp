@@ -1,17 +1,17 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Pose, PoseCategory } from '@/types/models';
 import { Colors } from '@/constants/theme';
-import { STRINGS } from '@/constants/strings';
 
-const CATEGORY_LABELS: Record<PoseCategory, string> = {
-  'full-body': STRINGS.library.categoryFullBody,
-  portraits: STRINGS.library.categoryPortraits,
-  'props-objects': STRINGS.library.categoryPropsObjects,
-  haircuts: STRINGS.library.categoryHaircuts,
-  'natural-objects': STRINGS.library.categoryNaturalObjects,
-  'museum-objects': STRINGS.library.categoryMuseumObjects,
-  animals: STRINGS.library.categoryAnimals,
+const CATEGORY_KEY_MAP: Record<PoseCategory, string> = {
+  'full-body': 'library.categoryFullBody',
+  portraits: 'library.categoryPortraits',
+  'props-objects': 'library.categoryPropsObjects',
+  haircuts: 'library.categoryHaircuts',
+  'natural-objects': 'library.categoryNaturalObjects',
+  'museum-objects': 'library.categoryMuseumObjects',
+  animals: 'library.categoryAnimals',
 };
 
 type SubjectCardProps = {
@@ -22,8 +22,9 @@ type SubjectCardProps = {
 };
 
 export function SubjectCard({ pose, isFavourite, onPress, onLongPress }: SubjectCardProps) {
+  const { t } = useTranslation();
   const primaryCategory = pose.category[0];
-  const categoryLabel = primaryCategory ? CATEGORY_LABELS[primaryCategory] : '';
+  const categoryLabel = primaryCategory ? t(CATEGORY_KEY_MAP[primaryCategory]) : '';
 
   return (
     <Pressable

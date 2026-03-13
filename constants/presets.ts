@@ -1,4 +1,4 @@
-import { STRINGS } from '@/constants/strings';
+import i18n from '@/i18n';
 
 export type GenderOption = 'male' | 'female' | 'both';
 
@@ -115,7 +115,7 @@ export const DEFAULT_PRESET_LAYOUT: PresetLayoutState = {
 export const BUILTIN_PRESETS: SessionPreset[] = [
   {
     id: 'builtin-30-second-gestures',
-    name: STRINGS.practice.preset30SecondGesturesName,
+    name: i18n.t('practice.preset30SecondGesturesName'),
     isBuiltIn: true,
     config: {
       ...DEFAULT_SESSION_CONFIG,
@@ -127,7 +127,7 @@ export const BUILTIN_PRESETS: SessionPreset[] = [
   },
   {
     id: 'builtin-1-minute-poses',
-    name: STRINGS.practice.preset1MinutePosesName,
+    name: i18n.t('practice.preset1MinutePosesName'),
     isBuiltIn: true,
     config: {
       ...DEFAULT_SESSION_CONFIG,
@@ -139,7 +139,7 @@ export const BUILTIN_PRESETS: SessionPreset[] = [
   },
   {
     id: 'builtin-2-minute-poses',
-    name: STRINGS.practice.preset2MinutePosesName,
+    name: i18n.t('practice.preset2MinutePosesName'),
     isBuiltIn: true,
     config: {
       ...DEFAULT_SESSION_CONFIG,
@@ -151,7 +151,7 @@ export const BUILTIN_PRESETS: SessionPreset[] = [
   },
   {
     id: 'builtin-5-minute-study',
-    name: STRINGS.practice.preset5MinuteStudyName,
+    name: i18n.t('practice.preset5MinuteStudyName'),
     isBuiltIn: true,
     config: {
       ...DEFAULT_SESSION_CONFIG,
@@ -163,7 +163,7 @@ export const BUILTIN_PRESETS: SessionPreset[] = [
   },
   {
     id: 'builtin-portrait-practice',
-    name: STRINGS.practice.presetPortraitPracticeName,
+    name: i18n.t('practice.presetPortraitPracticeName'),
     isBuiltIn: true,
     config: {
       ...DEFAULT_SESSION_CONFIG,
@@ -175,7 +175,7 @@ export const BUILTIN_PRESETS: SessionPreset[] = [
   },
   {
     id: 'builtin-object-sketching',
-    name: STRINGS.practice.presetObjectSketchingName,
+    name: i18n.t('practice.presetObjectSketchingName'),
     isBuiltIn: true,
     config: {
       ...DEFAULT_SESSION_CONFIG,

@@ -13,9 +13,10 @@ import {
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { useTranslation } from 'react-i18next';
+
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { STRINGS } from '@/constants/strings';
 import { Colors } from '@/constants/theme';
 import {
   BUILTIN_PRESETS,
@@ -43,6 +44,7 @@ type ContextAction =
   | 'moveDown';
 
 export default function PracticeScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
 
   const [userPresets, setUserPresets] = useState<SessionPreset[]>([]);
@@ -341,7 +343,7 @@ export default function PracticeScreen() {
       <View style={styles.presetBadgeRow}>
         <View style={[styles.presetBadge, item.isCustom && styles.presetBadgeCustom]}>
           <Text style={styles.presetBadgeText}>
-            {item.isCustom ? STRINGS.practice.presetsCustomBadge : STRINGS.practice.presetsBuiltInBadge}
+            {item.isCustom ? t('practice.presetsCustomBadge') : t('practice.presetsBuiltInBadge')}
           </Text>
         </View>
       </View>
@@ -355,7 +357,7 @@ export default function PracticeScreen() {
         style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
       >
         <ThemedText type="title" style={styles.title}>
-          {STRINGS.practice.title}
+          {t('practice.title')}
         </ThemedText>
 
         <Pressable
@@ -369,7 +371,7 @@ export default function PracticeScreen() {
         >
           <Text style={styles.startButtonIcon}>▶</Text>
           <ThemedText type="defaultSemiBold" style={styles.startButtonLabel}>
-            {STRINGS.practice.startPracticeButton}
+            {t('practice.startPracticeButton')}
           </ThemedText>
         </Pressable>
 
@@ -377,22 +379,18 @@ export default function PracticeScreen() {
           <View style={styles.streakHeader}>
             <Text style={styles.streakIcon}>🔥</Text>
             <ThemedText type="subtitle" style={styles.streakTitle}>
-              {STRINGS.practice.streakLabel}
+              {t('practice.streakLabel')}
             </ThemedText>
           </View>
           <Text style={styles.streakValue}>
             {streakDays > 0
-              ? `${streakDays} ${
-                  streakDays === 1
-                    ? STRINGS.practice.streakSingleDaySuffix
-                    : STRINGS.practice.streakDaysSuffix
-                }`
-              : STRINGS.practice.streakNoDays}
+              ? t('practice.streakDays', { count: streakDays })
+              : t('practice.streakNoDays')}
           </Text>
         </View>
 
         <View style={styles.presetsHeaderRow}>
-          <ThemedText type="subtitle">{STRINGS.practice.presetsSectionTitle}</ThemedText>
+          <ThemedText type="subtitle">{t('practice.presetsSectionTitle')}</ThemedText>
         </View>
 
         <FlatList
@@ -423,7 +421,7 @@ export default function PracticeScreen() {
               accessibilityRole="button"
             >
               <Text style={styles.contextMenuItemText}>
-                {STRINGS.practice.presetContextEdit}
+                {t('practice.presetContextEdit')}
               </Text>
             </Pressable>
             <Pressable
@@ -432,7 +430,7 @@ export default function PracticeScreen() {
               accessibilityRole="button"
             >
               <Text style={styles.contextMenuItemText}>
-                {STRINGS.practice.presetContextRename}
+                {t('practice.presetContextRename')}
               </Text>
             </Pressable>
             {!selectedPreset?.isCustom ? (
@@ -442,7 +440,7 @@ export default function PracticeScreen() {
                 accessibilityRole="button"
               >
                 <Text style={styles.contextMenuItemText}>
-                  {STRINGS.practice.presetContextHide}
+                  {t('practice.presetContextHide')}
                 </Text>
               </Pressable>
             ) : (
@@ -452,7 +450,7 @@ export default function PracticeScreen() {
                 accessibilityRole="button"
               >
                 <Text style={styles.contextMenuItemText}>
-                  {STRINGS.practice.presetContextDelete}
+                  {t('practice.presetContextDelete')}
                 </Text>
               </Pressable>
             )}
@@ -462,7 +460,7 @@ export default function PracticeScreen() {
               accessibilityRole="button"
             >
               <Text style={styles.contextMenuItemText}>
-                {STRINGS.practice.presetContextMoveUp}
+                {t('practice.presetContextMoveUp')}
               </Text>
             </Pressable>
             <Pressable
@@ -471,11 +469,11 @@ export default function PracticeScreen() {
               accessibilityRole="button"
             >
               <Text style={styles.contextMenuItemText}>
-                {STRINGS.practice.presetContextMoveDown}
+                {t('practice.presetContextMoveDown')}
               </Text>
             </Pressable>
             <Pressable style={styles.contextMenuCancel} onPress={closeContextMenu}>
-              <Text style={styles.contextMenuCancelText}>{STRINGS.viewer.close}</Text>
+              <Text style={styles.contextMenuCancelText}>{t('viewer.close')}</Text>
             </Pressable>
           </View>
         </View>
@@ -490,7 +488,7 @@ export default function PracticeScreen() {
         <View style={styles.modalBackdrop}>
           <View style={styles.renameModal}>
             <ThemedText type="subtitle" style={styles.renameTitle}>
-              {STRINGS.practice.presetContextRename}
+              {t('practice.presetContextRename')}
             </ThemedText>
             <TextInput
               value={renameValue}
@@ -503,10 +501,10 @@ export default function PracticeScreen() {
                 style={styles.renameButtonSecondary}
                 onPress={() => setIsRenameModalVisible(false)}
               >
-                <Text style={styles.renameButtonSecondaryText}>{STRINGS.viewer.close}</Text>
+                <Text style={styles.renameButtonSecondaryText}>{t('viewer.close')}</Text>
               </Pressable>
               <Pressable style={styles.renameButtonPrimary} onPress={handleConfirmRename}>
-                <Text style={styles.renameButtonPrimaryText}>{STRINGS.sessionConfig.updatePresetButton}</Text>
+                <Text style={styles.renameButtonPrimaryText}>{t('sessionConfig.updatePresetButton')}</Text>
               </Pressable>
             </View>
           </View>

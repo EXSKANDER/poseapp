@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { STRINGS } from '@/constants/strings';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '@/constants/theme';
 import {
   ALL_BODY_REGIONS,
@@ -40,6 +40,7 @@ type SessionConfigParams = {
 };
 
 export default function SessionConfigScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const params = useLocalSearchParams<SessionConfigParams>();
 
@@ -181,7 +182,7 @@ export default function SessionConfigScreen() {
     <ThemedView style={[styles.container, { backgroundColor }]}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <ThemedText type="title" style={styles.title}>
-          {STRINGS.sessionConfig.title}
+          {t('sessionConfig.title')}
         </ThemedText>
 
         {filterLabel && (
@@ -189,29 +190,29 @@ export default function SessionConfigScreen() {
             <Text style={styles.filterBannerText}>{filterLabel}</Text>
             {filterPoseIds && (
               <Text style={styles.filterBannerCount}>
-                {filterPoseIds.length} {STRINGS.library.sessionSubjectCountLabel}
+                {filterPoseIds.length} {t('library.sessionSubjectCountLabel')}
               </Text>
             )}
           </View>
         )}
 
         {/* Subject Selection */}
-        <SectionCard icon="👤" title={STRINGS.sessionConfig.subjectSectionTitle}>
+        <SectionCard icon="👤" title={t('sessionConfig.subjectSectionTitle')}>
           <View style={styles.fieldRow}>
-            <ThemedText style={styles.fieldLabel}>{STRINGS.sessionConfig.genderLabel}</ThemedText>
+            <ThemedText style={styles.fieldLabel}>{t('sessionConfig.genderLabel')}</ThemedText>
             <View style={styles.chipRow}>
               <Chip
-                label={STRINGS.sessionConfig.genderMale}
+                label={t('sessionConfig.genderMale')}
                 selected={config.gender === 'male'}
                 onPress={() => setConfig((prev) => ({ ...prev, gender: 'male' }))}
               />
               <Chip
-                label={STRINGS.sessionConfig.genderFemale}
+                label={t('sessionConfig.genderFemale')}
                 selected={config.gender === 'female'}
                 onPress={() => setConfig((prev) => ({ ...prev, gender: 'female' }))}
               />
               <Chip
-                label={STRINGS.sessionConfig.genderBoth}
+                label={t('sessionConfig.genderBoth')}
                 selected={config.gender === 'both'}
                 onPress={() => setConfig((prev) => ({ ...prev, gender: 'both' }))}
               />
@@ -220,10 +221,10 @@ export default function SessionConfigScreen() {
         </SectionCard>
 
         {/* Display Options */}
-        <SectionCard icon="🎨" title={STRINGS.sessionConfig.displaySectionTitle}>
+        <SectionCard icon="🎨" title={t('sessionConfig.displaySectionTitle')}>
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.showGridLabel}
+              {t('sessionConfig.showGridLabel')}
             </ThemedText>
             <Switch
               value={config.showGrid}
@@ -235,21 +236,21 @@ export default function SessionConfigScreen() {
 
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.backgroundLabel}
+              {t('sessionConfig.backgroundLabel')}
             </ThemedText>
             <View style={styles.chipRow}>
               <Chip
-                label={STRINGS.sessionConfig.backgroundDark}
+                label={t('sessionConfig.backgroundDark')}
                 selected={config.background === 'dark'}
                 onPress={() => setConfig((prev) => ({ ...prev, background: 'dark' }))}
               />
               <Chip
-                label={STRINGS.sessionConfig.backgroundMid}
+                label={t('sessionConfig.backgroundMid')}
                 selected={config.background === 'mid'}
                 onPress={() => setConfig((prev) => ({ ...prev, background: 'mid' }))}
               />
               <Chip
-                label={STRINGS.sessionConfig.backgroundLight}
+                label={t('sessionConfig.backgroundLight')}
                 selected={config.background === 'light'}
                 onPress={() => setConfig((prev) => ({ ...prev, background: 'light' }))}
               />
@@ -258,21 +259,21 @@ export default function SessionConfigScreen() {
         </SectionCard>
 
         {/* Perspective & Camera */}
-        <SectionCard icon="📷" title={STRINGS.sessionConfig.perspectiveSectionTitle}>
+        <SectionCard icon="📷" title={t('sessionConfig.perspectiveSectionTitle')}>
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.perspectiveModeLabel}
+              {t('sessionConfig.perspectiveModeLabel')}
             </ThemedText>
           </View>
           <View style={styles.chipRowFull}>
             {(
               [
-                { key: 'flat', label: STRINGS.viewer.perspectiveFlat },
-                { key: '1-point', label: STRINGS.viewer.perspective1Point },
-                { key: '2-point', label: STRINGS.viewer.perspective2Point },
-                { key: '3-point', label: STRINGS.viewer.perspective3Point },
-                { key: '4-point', label: STRINGS.viewer.perspective4Point },
-                { key: 'fisheye', label: STRINGS.viewer.perspectiveFisheye },
+                { key: 'flat', label: t('viewer.perspectiveFlat') },
+                { key: '1-point', label: t('viewer.perspective1Point') },
+                { key: '2-point', label: t('viewer.perspective2Point') },
+                { key: '3-point', label: t('viewer.perspective3Point') },
+                { key: '4-point', label: t('viewer.perspective4Point') },
+                { key: 'fisheye', label: t('viewer.perspectiveFisheye') },
               ] as { key: PerspectiveMode; label: string }[]
             ).map(({ key, label }) => (
               <Chip
@@ -286,20 +287,20 @@ export default function SessionConfigScreen() {
         </SectionCard>
 
         {/* Model Display */}
-        <SectionCard icon="🧍" title={STRINGS.sessionConfig.displayModesSectionTitle}>
+        <SectionCard icon="🧍" title={t('sessionConfig.displayModesSectionTitle')}>
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.modelStyleLabel}
+              {t('sessionConfig.modelStyleLabel')}
             </ThemedText>
           </View>
           <View style={styles.chipRowFull}>
             {(
               [
-                { key: 'solid', label: STRINGS.viewer.modelStyleSolid },
-                { key: 'muscle', label: STRINGS.viewer.modelStyleMuscle },
-                { key: 'skeleton', label: STRINGS.viewer.modelStyleSkeleton },
-                { key: 'forms', label: STRINGS.viewer.modelStyleForms },
-                { key: 'coloured-anatomy', label: STRINGS.viewer.modelStyleColouredAnatomy },
+                { key: 'solid', label: t('viewer.modelStyleSolid') },
+                { key: 'muscle', label: t('viewer.modelStyleMuscle') },
+                { key: 'skeleton', label: t('viewer.modelStyleSkeleton') },
+                { key: 'forms', label: t('viewer.modelStyleForms') },
+                { key: 'coloured-anatomy', label: t('viewer.modelStyleColouredAnatomy') },
               ] as { key: ModelStyle; label: string }[]
             ).map(({ key, label }) => (
               <Chip
@@ -313,29 +314,29 @@ export default function SessionConfigScreen() {
 
           <View style={styles.toggleRow}>
             <ToggleRow
-              label={STRINGS.sessionConfig.wireframeOverlayLabel}
+              label={t('sessionConfig.wireframeOverlayLabel')}
               value={config.wireframeOverlay}
               onToggle={(v) => setConfig((prev) => ({ ...prev, wireframeOverlay: v }))}
             />
             <ToggleRow
-              label={STRINGS.sessionConfig.negativeSpaceLabel}
+              label={t('sessionConfig.negativeSpaceLabel')}
               value={config.negativeSpace}
               onToggle={(v) => setConfig((prev) => ({ ...prev, negativeSpace: v }))}
             />
             <ToggleRow
-              label={STRINGS.sessionConfig.staticModeLabel}
+              label={t('sessionConfig.staticModeLabel')}
               value={config.staticMode}
               onToggle={(v) => setConfig((prev) => ({ ...prev, staticMode: v }))}
             />
             <ToggleRow
-              label={STRINGS.sessionConfig.mirrorLabel}
+              label={t('sessionConfig.mirrorLabel')}
               value={config.mirrorX}
               onToggle={(v) => setConfig((prev) => ({ ...prev, mirrorX: v }))}
             />
           </View>
 
           <LabeledSlider
-            label={STRINGS.sessionConfig.modelOpacityLabel}
+            label={t('sessionConfig.modelOpacityLabel')}
             value={config.modelOpacity}
             min={0.05}
             max={1}
@@ -344,18 +345,18 @@ export default function SessionConfigScreen() {
         </SectionCard>
 
         {/* Overlays & Helpers */}
-        <SectionCard icon="📐" title={STRINGS.sessionConfig.overlaysSectionTitle}>
+        <SectionCard icon="📐" title={t('sessionConfig.overlaysSectionTitle')}>
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.gridOverlayLabel}
+              {t('sessionConfig.gridOverlayLabel')}
             </ThemedText>
             <View style={styles.chipRow}>
               {(
                 [
-                  { key: 'off', label: STRINGS.viewer.gridOverlayOff },
-                  { key: '4', label: STRINGS.viewer.gridOverlay4 },
-                  { key: '9', label: STRINGS.viewer.gridOverlay9 },
-                  { key: '16', label: STRINGS.viewer.gridOverlay16 },
+                  { key: 'off', label: t('viewer.gridOverlayOff') },
+                  { key: '4', label: t('viewer.gridOverlay4') },
+                  { key: '9', label: t('viewer.gridOverlay9') },
+                  { key: '16', label: t('viewer.gridOverlay16') },
                 ] as { key: GridOverlayDivisions; label: string }[]
               ).map(({ key, label }) => (
                 <Chip
@@ -370,17 +371,17 @@ export default function SessionConfigScreen() {
 
           <View style={styles.toggleRow}>
             <ToggleRow
-              label={STRINGS.sessionConfig.boundingBoxLabel}
+              label={t('sessionConfig.boundingBoxLabel')}
               value={config.showBoundingBox}
               onToggle={(v) => setConfig((prev) => ({ ...prev, showBoundingBox: v }))}
             />
             <ToggleRow
-              label={STRINGS.sessionConfig.floorPlaneLabel}
+              label={t('sessionConfig.floorPlaneLabel')}
               value={config.showFloorPlane}
               onToggle={(v) => setConfig((prev) => ({ ...prev, showFloorPlane: v }))}
             />
             <ToggleRow
-              label={STRINGS.sessionConfig.poseShadowLabel}
+              label={t('sessionConfig.poseShadowLabel')}
               value={config.showPoseShadow}
               onToggle={(v) => setConfig((prev) => ({ ...prev, showPoseShadow: v }))}
             />
@@ -388,18 +389,18 @@ export default function SessionConfigScreen() {
 
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.limbSelectionLabel}
+              {t('sessionConfig.limbSelectionLabel')}
             </ThemedText>
           </View>
           <View style={styles.chipRowFull}>
             {ALL_BODY_REGIONS.map((region) => {
               const labels: Record<BodyRegion, string> = {
-                head: STRINGS.viewer.regionHead,
-                torso: STRINGS.viewer.regionTorso,
-                'left-arm': STRINGS.viewer.regionLeftArm,
-                'right-arm': STRINGS.viewer.regionRightArm,
-                'left-leg': STRINGS.viewer.regionLeftLeg,
-                'right-leg': STRINGS.viewer.regionRightLeg,
+                head: t('viewer.regionHead'),
+                torso: t('viewer.regionTorso'),
+                'left-arm': t('viewer.regionLeftArm'),
+                'right-arm': t('viewer.regionRightArm'),
+                'left-leg': t('viewer.regionLeftLeg'),
+                'right-leg': t('viewer.regionRightLeg'),
               };
               return (
                 <Chip
@@ -425,9 +426,9 @@ export default function SessionConfigScreen() {
         </SectionCard>
 
         {/* Lighting */}
-        <SectionCard icon="💡" title={STRINGS.sessionConfig.lightingSectionTitle}>
+        <SectionCard icon="💡" title={t('sessionConfig.lightingSectionTitle')}>
           <LabeledSlider
-            label={STRINGS.sessionConfig.directionalLightLabel}
+            label={t('sessionConfig.directionalLightLabel')}
             value={config.directionalIntensity}
             min={0}
             max={2}
@@ -436,7 +437,7 @@ export default function SessionConfigScreen() {
             }
           />
           <LabeledSlider
-            label={STRINGS.sessionConfig.ambientLightLabel}
+            label={t('sessionConfig.ambientLightLabel')}
             value={config.ambientIntensity}
             min={0}
             max={2}
@@ -445,18 +446,18 @@ export default function SessionConfigScreen() {
         </SectionCard>
 
         {/* Time Options */}
-        <SectionCard icon="⏱" title={STRINGS.sessionConfig.timeSectionTitle}>
+        <SectionCard icon="⏱" title={t('sessionConfig.timeSectionTitle')}>
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.poseDurationLabel}
+              {t('sessionConfig.poseDurationLabel')}
             </ThemedText>
             <View style={styles.chipRow}>
               {DURATION_OPTIONS.map((seconds) => {
                 const minutes = seconds / 60;
                 const isMinute = minutes >= 1;
                 const label = isMinute
-                  ? `${minutes}${STRINGS.sessionConfig.durationMinutes}`
-                  : `${seconds}${STRINGS.sessionConfig.durationSeconds}`;
+                  ? `${minutes}${t('sessionConfig.durationMinutes')}`
+                  : `${seconds}${t('sessionConfig.durationSeconds')}`;
 
                 return (
                   <Chip
@@ -474,13 +475,13 @@ export default function SessionConfigScreen() {
 
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.poseCountLabel}
+              {t('sessionConfig.poseCountLabel')}
             </ThemedText>
             <View style={styles.chipRow}>
               {POSE_COUNT_OPTIONS.map((count) => (
                 <Chip
                   key={count}
-                  label={`${count} ${STRINGS.sessionConfig.posesSuffix}`}
+                  label={`${count} ${t('sessionConfig.posesSuffix')}`}
                   selected={config.poseCount === count}
                   onPress={() => setConfig((prev) => ({ ...prev, poseCount: count }))}
                 />
@@ -490,14 +491,14 @@ export default function SessionConfigScreen() {
 
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.breakDurationLabel}
+              {t('sessionConfig.breakDurationLabel')}
             </ThemedText>
             <View style={styles.chipRow}>
               {BREAK_OPTIONS.map((seconds) => {
                 const label =
                   seconds === 0
-                    ? STRINGS.sessionConfig.breakOff
-                    : `${seconds}${STRINGS.sessionConfig.breakSecondsSuffix}`;
+                    ? t('sessionConfig.breakOff')
+                    : `${seconds}${t('sessionConfig.breakSecondsSuffix')}`;
                 return (
                   <Chip
                     key={seconds}
@@ -513,24 +514,24 @@ export default function SessionConfigScreen() {
           </View>
 
           <ToggleRow
-            label={STRINGS.sessionConfig.randomOrderLabel}
+            label={t('sessionConfig.randomOrderLabel')}
             value={config.randomOrder}
             onToggle={(value) => setConfig((prev) => ({ ...prev, randomOrder: value }))}
           />
         </SectionCard>
 
         {/* Transitions & Audio */}
-        <SectionCard icon="🎬" title={STRINGS.sessionConfig.transitionSectionTitle}>
+        <SectionCard icon="🎬" title={t('sessionConfig.transitionSectionTitle')}>
           <View style={styles.fieldRow}>
             <ThemedText style={styles.fieldLabel}>
-              {STRINGS.sessionConfig.transitionStyleLabel}
+              {t('sessionConfig.transitionStyleLabel')}
             </ThemedText>
             <View style={styles.chipRow}>
               {(
                 [
-                  { key: 'cut', label: STRINGS.sessionConfig.transitionCut },
-                  { key: 'fade', label: STRINGS.sessionConfig.transitionFade },
-                  { key: 'countdown', label: STRINGS.sessionConfig.transitionCountdown },
+                  { key: 'cut', label: t('sessionConfig.transitionCut') },
+                  { key: 'fade', label: t('sessionConfig.transitionFade') },
+                  { key: 'countdown', label: t('sessionConfig.transitionCountdown') },
                 ] as { key: TransitionStyle; label: string }[]
               ).map(({ key, label }) => (
                 <Chip
@@ -544,19 +545,19 @@ export default function SessionConfigScreen() {
           </View>
 
           <ToggleRow
-            label={STRINGS.sessionConfig.audioCueLabel}
+            label={t('sessionConfig.audioCueLabel')}
             value={config.audioCue}
             onToggle={(v) => setConfig((prev) => ({ ...prev, audioCue: v }))}
           />
         </SectionCard>
 
         {/* Presets */}
-        <SectionCard icon="💾" title={STRINGS.sessionConfig.presetsSectionTitle}>
+        <SectionCard icon="💾" title={t('sessionConfig.presetsSectionTitle')}>
           <View style={styles.presetRow}>
             <TextInput
               value={presetName}
               onChangeText={setPresetName}
-              placeholder={STRINGS.sessionConfig.presetNameLabel}
+              placeholder={t('sessionConfig.presetNameLabel')}
               placeholderTextColor="#777"
               style={styles.presetInput}
               accessibilityLabel="Preset name"
@@ -569,8 +570,8 @@ export default function SessionConfigScreen() {
             >
               <Text style={styles.primaryButtonText}>
                 {editingPresetId
-                  ? STRINGS.sessionConfig.savePresetAsNewButton
-                  : STRINGS.sessionConfig.savePresetButton}
+                  ? t('sessionConfig.savePresetAsNewButton')
+                  : t('sessionConfig.savePresetButton')}
               </Text>
             </Pressable>
             {editingPresetId && (
@@ -581,7 +582,7 @@ export default function SessionConfigScreen() {
                 accessibilityRole="button"
               >
                 <Text style={styles.secondaryButtonText}>
-                  {STRINGS.sessionConfig.updatePresetButton}
+                  {t('sessionConfig.updatePresetButton')}
                 </Text>
               </Pressable>
             )}
@@ -614,7 +615,7 @@ export default function SessionConfigScreen() {
           accessibilityRole="button"
         >
           <Text style={styles.startButtonIcon}>▶</Text>
-          <Text style={styles.startButtonText}>{STRINGS.sessionConfig.startSessionButton}</Text>
+          <Text style={styles.startButtonText}>{t('sessionConfig.startSessionButton')}</Text>
         </Pressable>
       </ScrollView>
     </ThemedView>

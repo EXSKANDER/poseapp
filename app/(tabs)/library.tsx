@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { SubjectCard } from '@/components/SubjectCard';
-import { STRINGS } from '@/constants/strings';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '@/constants/theme';
 import { POSE_CATALOGUE } from '@/data/catalogue';
 import { useFavourites } from '@/hooks/use-favourites';
@@ -25,19 +25,20 @@ import { Pose, PoseCategory, PoseDifficulty, PoseGender, SortOption } from '@/ty
 
 type TabKey = 'all' | PoseCategory | 'playlists';
 
-const CATEGORY_TABS: { key: TabKey; label: string }[] = [
-  { key: 'all', label: STRINGS.library.categoryAll },
-  { key: 'full-body', label: STRINGS.library.categoryFullBody },
-  { key: 'portraits', label: STRINGS.library.categoryPortraits },
-  { key: 'props-objects', label: STRINGS.library.categoryPropsObjects },
-  { key: 'haircuts', label: STRINGS.library.categoryHaircuts },
-  { key: 'natural-objects', label: STRINGS.library.categoryNaturalObjects },
-  { key: 'museum-objects', label: STRINGS.library.categoryMuseumObjects },
-  { key: 'animals', label: STRINGS.library.categoryAnimals },
-  { key: 'playlists', label: STRINGS.library.categoryPlaylists },
-];
-
 export default function LibraryScreen() {
+  const { t } = useTranslation();
+
+  const CATEGORY_TABS: { key: TabKey; label: string }[] = [
+    { key: 'all', label: t('library.categoryAll') },
+    { key: 'full-body', label: t('library.categoryFullBody') },
+    { key: 'portraits', label: t('library.categoryPortraits') },
+    { key: 'props-objects', label: t('library.categoryPropsObjects') },
+    { key: 'haircuts', label: t('library.categoryHaircuts') },
+    { key: 'natural-objects', label: t('library.categoryNaturalObjects') },
+    { key: 'museum-objects', label: t('library.categoryMuseumObjects') },
+    { key: 'animals', label: t('library.categoryAnimals') },
+    { key: 'playlists', label: t('library.categoryPlaylists') },
+  ];
   const router = useRouter();
   const { isFavourite, addFavourite, removeFavourite, toggleFavourite, favouriteIds } =
     useFavourites();
@@ -201,7 +202,7 @@ export default function LibraryScreen() {
     const poseIds = filteredPoses.map((p) => p.id);
     router.push({
       pathname: '/session-config',
-      params: { filterPoseIds: JSON.stringify(poseIds), filterLabel: STRINGS.library.sessionFromFilterLabel },
+      params: { filterPoseIds: JSON.stringify(poseIds), filterLabel: t('library.sessionFromFilterLabel') },
     });
   };
 
@@ -212,7 +213,7 @@ export default function LibraryScreen() {
       pathname: '/session-config',
       params: {
         filterPoseIds: JSON.stringify(playlist.poseIds),
-        filterLabel: `${STRINGS.library.sessionFromPlaylistLabel} ${playlist.name}`,
+        filterLabel: `${t('library.sessionFromPlaylistLabel')} ${playlist.name}`,
       },
     });
   };
@@ -221,12 +222,12 @@ export default function LibraryScreen() {
     const playlist = playlists.find((p) => p.id === playlistId);
     if (!playlist) return;
     Alert.alert(
-      STRINGS.library.playlistDeleteConfirmTitle,
-      STRINGS.library.playlistDeleteConfirmMessage,
+      t('library.playlistDeleteConfirmTitle'),
+      t('library.playlistDeleteConfirmMessage'),
       [
-        { text: STRINGS.library.playlistCancelButton, style: 'cancel' },
+        { text: t('library.playlistCancelButton'), style: 'cancel' },
         {
-          text: STRINGS.library.playlistDeleteConfirmButton,
+          text: t('library.playlistDeleteConfirmButton'),
           style: 'destructive',
           onPress: () => {
             deletePlaylist(playlistId);
@@ -271,8 +272,8 @@ export default function LibraryScreen() {
 
   const renderEmptyList = () => (
     <View style={styles.emptyState}>
-      <Text style={styles.emptyTitle}>{STRINGS.library.emptyStateTitle}</Text>
-      <Text style={styles.emptyMessage}>{STRINGS.library.emptyStateMessage}</Text>
+      <Text style={styles.emptyTitle}>{t('library.emptyStateTitle')}</Text>
+      <Text style={styles.emptyMessage}>{t('library.emptyStateMessage')}</Text>
     </View>
   );
 
@@ -282,7 +283,7 @@ export default function LibraryScreen() {
       <ThemedView style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
           <ThemedText type="title" style={styles.title}>
-            {STRINGS.library.title}
+            {t('library.title')}
           </ThemedText>
 
           {/* Category tabs */}
@@ -310,7 +311,7 @@ export default function LibraryScreen() {
             <View style={styles.playlistDetail}>
               <View style={styles.playlistDetailHeader}>
                 <Pressable onPress={() => setViewingPlaylistId(null)}>
-                  <Text style={styles.backButton}>{STRINGS.viewer.back}</Text>
+                  <Text style={styles.backButton}>{t('viewer.back')}</Text>
                 </Pressable>
                 <ThemedText type="subtitle" style={styles.playlistDetailName}>
                   {viewingPlaylist.name}
@@ -329,11 +330,11 @@ export default function LibraryScreen() {
                         undefined,
                         [
                           {
-                            text: STRINGS.library.playlistRemoveSubject,
+                            text: t('library.playlistRemoveSubject'),
                             style: 'destructive',
                             onPress: () => removeFromPlaylist(viewingPlaylist.id, item.id),
                           },
-                          { text: STRINGS.library.quickActionCancel, style: 'cancel' },
+                          { text: t('library.quickActionCancel'), style: 'cancel' },
                         ],
                       );
                     }}
@@ -349,7 +350,7 @@ export default function LibraryScreen() {
                 onPress={() => handlePlaylistStartSession(viewingPlaylist.id)}
               >
                 <Text style={styles.startSessionButtonText}>
-                  {STRINGS.library.playlistStartSession}
+                  {t('library.playlistStartSession')}
                 </Text>
               </Pressable>
             </View>
@@ -364,14 +365,14 @@ export default function LibraryScreen() {
                 }}
               >
                 <Text style={styles.createPlaylistButtonText}>
-                  {STRINGS.library.playlistCreateNew}
+                  {t('library.playlistCreateNew')}
                 </Text>
               </Pressable>
 
               {playlists.length === 0 ? (
                 <View style={styles.emptyState}>
-                  <Text style={styles.emptyTitle}>{STRINGS.library.playlistsEmptyTitle}</Text>
-                  <Text style={styles.emptyMessage}>{STRINGS.library.playlistsEmptyMessage}</Text>
+                  <Text style={styles.emptyTitle}>{t('library.playlistsEmptyTitle')}</Text>
+                  <Text style={styles.emptyMessage}>{t('library.playlistsEmptyMessage')}</Text>
                 </View>
               ) : (
                 playlists.map((playlist) => (
@@ -396,10 +397,7 @@ export default function LibraryScreen() {
                       >
                         <Text style={styles.playlistName}>{playlist.name}</Text>
                         <Text style={styles.playlistCount}>
-                          {playlist.poseIds.length}{' '}
-                          {playlist.poseIds.length === 1
-                            ? STRINGS.library.playlistSubjectCountSingular
-                            : STRINGS.library.playlistSubjectCount}
+                          {t('library.playlistSubjectCount', { count: playlist.poseIds.length })}
                         </Text>
                       </Pressable>
                     )}
@@ -409,7 +407,7 @@ export default function LibraryScreen() {
                         onPress={() => handlePlaylistStartSession(playlist.id)}
                       >
                         <Text style={styles.playlistActionText}>
-                          {STRINGS.library.playlistStartSession}
+                          {t('library.playlistStartSession')}
                         </Text>
                       </Pressable>
                       <Pressable
@@ -417,7 +415,7 @@ export default function LibraryScreen() {
                         onPress={() => handleStartRename(playlist.id)}
                       >
                         <Text style={styles.playlistActionTextSecondary}>
-                          {STRINGS.library.playlistRename}
+                          {t('library.playlistRename')}
                         </Text>
                       </Pressable>
                       <Pressable
@@ -425,7 +423,7 @@ export default function LibraryScreen() {
                         onPress={() => handleDeletePlaylist(playlist.id)}
                       >
                         <Text style={[styles.playlistActionTextSecondary, { color: '#E74C3C' }]}>
-                          {STRINGS.library.playlistDelete}
+                          {t('library.playlistDelete')}
                         </Text>
                       </Pressable>
                     </View>
@@ -456,14 +454,14 @@ export default function LibraryScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ThemedText type="title" style={styles.title}>
-          {STRINGS.library.title}
+          {t('library.title')}
         </ThemedText>
 
         {/* Search bar */}
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
-            placeholder={STRINGS.library.searchPlaceholder}
+            placeholder={t('library.searchPlaceholder')}
             placeholderTextColor="#888"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -501,12 +499,12 @@ export default function LibraryScreen() {
           {showGenderFilter && (
             <>
               <FilterChip
-                label={STRINGS.library.filterGenderMale}
+                label={t('library.filterGenderMale')}
                 active={genderFilter === 'male'}
                 onPress={() => setGenderFilter(genderFilter === 'male' ? null : 'male')}
               />
               <FilterChip
-                label={STRINGS.library.filterGenderFemale}
+                label={t('library.filterGenderFemale')}
                 active={genderFilter === 'female'}
                 onPress={() => setGenderFilter(genderFilter === 'female' ? null : 'female')}
               />
@@ -515,21 +513,21 @@ export default function LibraryScreen() {
 
           {/* Difficulty filters */}
           <FilterChip
-            label={STRINGS.library.filterDifficultyBeginner}
+            label={t('library.filterDifficultyBeginner')}
             active={difficultyFilter === 'beginner'}
             onPress={() =>
               setDifficultyFilter(difficultyFilter === 'beginner' ? null : 'beginner')
             }
           />
           <FilterChip
-            label={STRINGS.library.filterDifficultyIntermediate}
+            label={t('library.filterDifficultyIntermediate')}
             active={difficultyFilter === 'intermediate'}
             onPress={() =>
               setDifficultyFilter(difficultyFilter === 'intermediate' ? null : 'intermediate')
             }
           />
           <FilterChip
-            label={STRINGS.library.filterDifficultyAdvanced}
+            label={t('library.filterDifficultyAdvanced')}
             active={difficultyFilter === 'advanced'}
             onPress={() =>
               setDifficultyFilter(difficultyFilter === 'advanced' ? null : 'advanced')
@@ -538,7 +536,7 @@ export default function LibraryScreen() {
 
           {/* Favourites toggle */}
           <FilterChip
-            label={STRINGS.library.filterFavouritesOnly}
+            label={t('library.filterFavouritesOnly')}
             active={favouritesOnly}
             onPress={() => setFavouritesOnly(!favouritesOnly)}
           />
@@ -546,17 +544,17 @@ export default function LibraryScreen() {
           {/* Sort options */}
           <View style={styles.sortSeparator} />
           <FilterChip
-            label={STRINGS.library.sortNewest}
+            label={t('library.sortNewest')}
             active={sortOption === 'newest'}
             onPress={() => setSortOption('newest')}
           />
           <FilterChip
-            label={STRINGS.library.sortAlphabetical}
+            label={t('library.sortAlphabetical')}
             active={sortOption === 'alphabetical'}
             onPress={() => setSortOption('alphabetical')}
           />
           <FilterChip
-            label={STRINGS.library.sortRandom}
+            label={t('library.sortRandom')}
             active={sortOption === 'random'}
             onPress={() => setSortOption('random')}
           />
@@ -576,7 +574,7 @@ export default function LibraryScreen() {
         {hasActiveFilters && filteredPoses.length > 0 && (
           <Pressable style={styles.startSessionButton} onPress={handleStartSessionFromSelection}>
             <Text style={styles.startSessionButtonText}>
-              {STRINGS.library.startSessionFromSelection}
+              {t('library.startSessionFromSelection')}
             </Text>
           </Pressable>
         )}
@@ -596,8 +594,8 @@ export default function LibraryScreen() {
                   <Pressable style={styles.quickActionItem} onPress={handleQuickActionFavourite}>
                     <Text style={styles.quickActionText}>
                       {isFavourite(quickActionPose.id)
-                        ? STRINGS.library.quickActionRemoveFavourite
-                        : STRINGS.library.quickActionAddFavourite}
+                        ? t('library.quickActionRemoveFavourite')
+                        : t('library.quickActionAddFavourite')}
                     </Text>
                   </Pressable>
                   <Pressable
@@ -605,18 +603,18 @@ export default function LibraryScreen() {
                     onPress={handleQuickActionAddToPlaylist}
                   >
                     <Text style={styles.quickActionText}>
-                      {STRINGS.library.quickActionAddToPlaylist}
+                      {t('library.quickActionAddToPlaylist')}
                     </Text>
                   </Pressable>
                   <Pressable style={styles.quickActionItem} onPress={handleQuickActionPreview}>
-                    <Text style={styles.quickActionText}>{STRINGS.library.quickActionPreview}</Text>
+                    <Text style={styles.quickActionText}>{t('library.quickActionPreview')}</Text>
                   </Pressable>
                   <Pressable
                     style={[styles.quickActionItem, styles.quickActionCancel]}
                     onPress={() => setQuickActionPose(null)}
                   >
                     <Text style={[styles.quickActionText, { color: '#999' }]}>
-                      {STRINGS.library.quickActionCancel}
+                      {t('library.quickActionCancel')}
                     </Text>
                   </Pressable>
                 </>
@@ -634,7 +632,7 @@ export default function LibraryScreen() {
         >
           <Pressable style={styles.modalOverlay} onPress={() => setPlaylistPickerPoseId(null)}>
             <View style={styles.quickActionsSheet}>
-              <Text style={styles.quickActionsTitle}>{STRINGS.library.playlistSelectTitle}</Text>
+              <Text style={styles.quickActionsTitle}>{t('library.playlistSelectTitle')}</Text>
               {playlists.map((pl) => (
                 <Pressable
                   key={pl.id}
@@ -651,7 +649,7 @@ export default function LibraryScreen() {
                 onPress={handleCreateNewPlaylistFromPicker}
               >
                 <Text style={[styles.quickActionText, { color: Colors.light.tint }]}>
-                  {STRINGS.library.playlistCreateNew}
+                  {t('library.playlistCreateNew')}
                 </Text>
               </Pressable>
               <Pressable
@@ -659,7 +657,7 @@ export default function LibraryScreen() {
                 onPress={() => setPlaylistPickerPoseId(null)}
               >
                 <Text style={[styles.quickActionText, { color: '#999' }]}>
-                  {STRINGS.library.quickActionCancel}
+                  {t('library.quickActionCancel')}
                 </Text>
               </Pressable>
             </View>
@@ -709,18 +707,19 @@ function NewPlaylistModal({
 }: {
   visible: boolean;
   name: string;
-  onChangeName: (t: string) => void;
+  onChangeName: (text: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <Pressable style={styles.modalOverlay} onPress={onCancel}>
         <View style={styles.newPlaylistSheet}>
-          <Text style={styles.quickActionsTitle}>{STRINGS.library.playlistCreateNew}</Text>
+          <Text style={styles.quickActionsTitle}>{t('library.playlistCreateNew')}</Text>
           <TextInput
             style={styles.newPlaylistInput}
-            placeholder={STRINGS.library.playlistNamePlaceholder}
+            placeholder={t('library.playlistNamePlaceholder')}
             placeholderTextColor="#888"
             value={name}
             onChangeText={onChangeName}
@@ -729,11 +728,11 @@ function NewPlaylistModal({
           />
           <View style={styles.newPlaylistButtons}>
             <Pressable style={styles.newPlaylistCancel} onPress={onCancel}>
-              <Text style={styles.newPlaylistCancelText}>{STRINGS.library.playlistCancelButton}</Text>
+              <Text style={styles.newPlaylistCancelText}>{t('library.playlistCancelButton')}</Text>
             </Pressable>
             <Pressable style={styles.newPlaylistConfirm} onPress={onConfirm}>
               <Text style={styles.newPlaylistConfirmText}>
-                {STRINGS.library.playlistCreateButton}
+                {t('library.playlistCreateButton')}
               </Text>
             </Pressable>
           </View>
