@@ -6,4 +6,5 @@ export const STORAGE_KEYS = {
   sessionDates: 'poseapp.sessionStartDates',
   sessionPresets: 'poseapp.sessionPresets',
   presetLayout: 'poseapp.presetLayout',
+  onboardingComplete: 'poseapp.onboardingComplete',
 };

@@ -28,6 +28,7 @@ import {
   SessionConfig,
   SessionPreset,
 } from '@/constants/presets';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
 
 const SESSION_DATES_STORAGE_KEY = 'poseapp.sessionStartDates';
 
@@ -55,11 +56,15 @@ export default function PracticeScreen() {
   const [isRenameModalVisible, setIsRenameModalVisible] = useState(false);
   const [renameValue, setRenameValue] = useState('');
 
-  // Entry animation
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(20)).current;
+  const { preferences } = useUserPreferences();
+  const reduceMotion = preferences.reduceMotion;
+
+  // Entry animation (respects reduce motion)
+  const fadeAnim = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current;
+  const slideAnim = useRef(new Animated.Value(reduceMotion ? 0 : 20)).current;
 
   useEffect(() => {
+    if (reduceMotion) return;
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -72,7 +77,7 @@ export default function PracticeScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [fadeAnim, slideAnim]);
+  }, [fadeAnim, slideAnim, reduceMotion]);
 
   useEffect(() => {
     const loadPresetsAndLayout = async () => {

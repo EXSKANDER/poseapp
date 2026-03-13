@@ -465,6 +465,8 @@ export default function LibraryScreen() {
             placeholderTextColor="#888"
             value={searchQuery}
             onChangeText={setSearchQuery}
+            accessibilityLabel={t('library.searchPlaceholder')}
+            accessibilityRole="search"
           />
         </View>
 
@@ -480,6 +482,9 @@ export default function LibraryScreen() {
               key={tab.key}
               style={[styles.tab, activeTab === tab.key && styles.tabActive]}
               onPress={() => setActiveTab(tab.key)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: activeTab === tab.key }}
+              accessibilityLabel={tab.label}
             >
               <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>
                 {tab.label}
@@ -692,7 +697,13 @@ function FilterChip({
   onPress: () => void;
 }) {
   return (
-    <Pressable style={[styles.filterChip, active && styles.filterChipActive]} onPress={onPress}>
+    <Pressable
+      style={[styles.filterChip, active && styles.filterChipActive]}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={`Filter: ${label}`}
+    >
       <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>{label}</Text>
     </Pressable>
   );

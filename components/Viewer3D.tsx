@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   LayoutChangeEvent,
   PanResponder,
@@ -452,6 +452,36 @@ export function Viewer3D({
   const gridHelperRef = useRef<THREE.GridHelper | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
 
+  // Disposal refs for GPU memory cleanup
+  const rendererRef = useRef<Renderer | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+
+  // Dispose all Three.js resources when unmounting
+  useEffect(() => {
+    return () => {
+      if (animFrameRef.current !== null) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+      // Dispose all scene objects
+      if (sceneRef.current) {
+        sceneRef.current.traverse((obj) => {
+          if (obj instanceof THREE.Mesh) {
+            obj.geometry?.dispose();
+            if (Array.isArray(obj.material)) {
+              obj.material.forEach((m) => m.dispose());
+            } else if (obj.material) {
+              obj.material.dispose();
+            }
+          }
+        });
+        sceneRef.current.clear();
+      }
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
+    };
+  }, []);
+
   // Store current prop values for the render loop
   const propsRef = useRef({
     modelStyle,
@@ -497,6 +527,7 @@ export function Viewer3D({
       const aspect = width / height;
 
       const renderer = new Renderer({ gl });
+      rendererRef.current = renderer;
       renderer.setSize(width, height);
       renderer.setClearColor(backgroundColor);
       renderer.shadowMap.enabled = true;
@@ -626,7 +657,7 @@ export function Viewer3D({
       const clock = new THREE.Clock();
 
       const render = () => {
-        requestAnimationFrame(render);
+        animFrameRef.current = requestAnimationFrame(render);
 
         const p = propsRef.current;
         clock.getDelta();
@@ -933,7 +964,7 @@ export function Viewer3D({
 /**
  * Renders a 2D grid overlay on top of the 3D viewport.
  */
-function GridOverlay2D({ divisions }: { divisions: GridOverlayDivisions }) {
+const GridOverlay2D = React.memo(function GridOverlay2D({ divisions }: { divisions: GridOverlayDivisions }) {
   const count = divisions === '4' ? 2 : divisions === '9' ? 3 : divisions === '16' ? 4 : 0;
   if (count === 0) return null;
 
@@ -975,7 +1006,7 @@ function GridOverlay2D({ divisions }: { divisions: GridOverlayDivisions }) {
       {lines}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

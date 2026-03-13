@@ -24,6 +24,7 @@ export default function TabLayout() {
         options={{
           title: t('tabs.practice'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="play.circle.fill" color={color} />,
+          tabBarAccessibilityLabel: t('tabs.practice'),
         }}
       />
       <Tabs.Screen
@@ -31,6 +32,7 @@ export default function TabLayout() {
         options={{
           title: t('tabs.library'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="square.grid.2x2.fill" color={color} />,
+          tabBarAccessibilityLabel: t('tabs.library'),
         }}
       />
       <Tabs.Screen
@@ -38,9 +40,15 @@ export default function TabLayout() {
         options={{
           title: t('tabs.settings'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="gearshape.fill" color={color} />,
+          tabBarAccessibilityLabel: t('tabs.settings'),
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
   );
 }
-
