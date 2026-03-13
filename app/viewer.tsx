@@ -15,9 +15,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Viewer3D } from '@/components/Viewer3D';
 import { Static2DViewer } from '@/components/Static2DViewer';
-import { STRINGS } from '@/constants/strings';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '@/constants/theme';
 import { ThemedView } from '@/components/themed-view';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
 import {
   ALL_BODY_REGIONS,
   type BodyRegion,
@@ -62,40 +63,42 @@ type ViewerSessionConfig = {
   audioCue?: boolean;
 };
 
-const MODEL_STYLES: { key: ModelStyle; label: string }[] = [
-  { key: 'solid', label: STRINGS.viewer.modelStyleSolid },
-  { key: 'muscle', label: STRINGS.viewer.modelStyleMuscle },
-  { key: 'skeleton', label: STRINGS.viewer.modelStyleSkeleton },
-  { key: 'forms', label: STRINGS.viewer.modelStyleForms },
-  { key: 'coloured-anatomy', label: STRINGS.viewer.modelStyleColouredAnatomy },
-];
-
-const GRID_OPTIONS: { key: GridOverlayDivisions; label: string }[] = [
-  { key: 'off', label: STRINGS.viewer.gridOverlayOff },
-  { key: '4', label: STRINGS.viewer.gridOverlay4 },
-  { key: '9', label: STRINGS.viewer.gridOverlay9 },
-  { key: '16', label: STRINGS.viewer.gridOverlay16 },
-];
-
-const PERSPECTIVE_MODES: { key: PerspectiveMode; label: string }[] = [
-  { key: 'flat', label: STRINGS.viewer.perspectiveFlat },
-  { key: '1-point', label: STRINGS.viewer.perspective1Point },
-  { key: '2-point', label: STRINGS.viewer.perspective2Point },
-  { key: '3-point', label: STRINGS.viewer.perspective3Point },
-  { key: '4-point', label: STRINGS.viewer.perspective4Point },
-  { key: 'fisheye', label: STRINGS.viewer.perspectiveFisheye },
-];
-
-const BODY_REGION_LABELS: Record<BodyRegion, string> = {
-  head: STRINGS.viewer.regionHead,
-  torso: STRINGS.viewer.regionTorso,
-  'left-arm': STRINGS.viewer.regionLeftArm,
-  'right-arm': STRINGS.viewer.regionRightArm,
-  'left-leg': STRINGS.viewer.regionLeftLeg,
-  'right-leg': STRINGS.viewer.regionRightLeg,
-};
-
 export default function ViewerScreen() {
+  const { t } = useTranslation();
+
+  const MODEL_STYLES: { key: ModelStyle; label: string }[] = [
+    { key: 'solid', label: t('viewer.modelStyleSolid') },
+    { key: 'muscle', label: t('viewer.modelStyleMuscle') },
+    { key: 'skeleton', label: t('viewer.modelStyleSkeleton') },
+    { key: 'forms', label: t('viewer.modelStyleForms') },
+    { key: 'coloured-anatomy', label: t('viewer.modelStyleColouredAnatomy') },
+  ];
+
+  const GRID_OPTIONS: { key: GridOverlayDivisions; label: string }[] = [
+    { key: 'off', label: t('viewer.gridOverlayOff') },
+    { key: '4', label: t('viewer.gridOverlay4') },
+    { key: '9', label: t('viewer.gridOverlay9') },
+    { key: '16', label: t('viewer.gridOverlay16') },
+  ];
+
+  const PERSPECTIVE_MODES: { key: PerspectiveMode; label: string }[] = [
+    { key: 'flat', label: t('viewer.perspectiveFlat') },
+    { key: '1-point', label: t('viewer.perspective1Point') },
+    { key: '2-point', label: t('viewer.perspective2Point') },
+    { key: '3-point', label: t('viewer.perspective3Point') },
+    { key: '4-point', label: t('viewer.perspective4Point') },
+    { key: 'fisheye', label: t('viewer.perspectiveFisheye') },
+  ];
+
+  const BODY_REGION_LABELS: Record<BodyRegion, string> = {
+    head: t('viewer.regionHead'),
+    torso: t('viewer.regionTorso'),
+    'left-arm': t('viewer.regionLeftArm'),
+    'right-arm': t('viewer.regionRightArm'),
+    'left-leg': t('viewer.regionLeftLeg'),
+    'right-leg': t('viewer.regionRightLeg'),
+  };
+  const { preferences: userPrefs } = useUserPreferences();
   useKeepAwake();
 
   const router = useRouter();
@@ -413,8 +416,8 @@ export default function ViewerScreen() {
   const seconds = (remaining % 60).toString().padStart(2, '0');
 
   const displayTitle = isFreeStudy
-    ? params.poseName || STRINGS.viewer.freeStudyTitle
-    : `Pose ${currentPoseIndex + 1} of ${totalPoses}`;
+    ? params.poseName || t('viewer.freeStudyTitle')
+    : t('viewer.poseCounter', { current: currentPoseIndex + 1, total: totalPoses });
 
   const progressFraction = totalPoses > 1 ? currentPoseIndex / totalPoses : 0;
 
@@ -469,7 +472,7 @@ export default function ViewerScreen() {
           {!isFreeStudy && !isPlaying && !isTransitioning && !sessionComplete && (
             <View style={styles.pausedOverlay} pointerEvents="none">
               <View style={styles.pausedBadge}>
-                <Text style={styles.pausedText}>{STRINGS.viewer.paused}</Text>
+                <Text style={styles.pausedText}>{t('viewer.paused')}</Text>
               </View>
             </View>
           )}
@@ -478,7 +481,7 @@ export default function ViewerScreen() {
           {sessionComplete && (
             <View style={styles.sessionCompleteOverlay}>
               <Text style={styles.sessionCompleteText}>
-                {STRINGS.viewer.sessionComplete}
+                {t('viewer.sessionComplete')}
               </Text>
               <TouchableOpacity
                 style={styles.sessionCompleteButton}
@@ -486,7 +489,7 @@ export default function ViewerScreen() {
                 accessibilityLabel="Return to home"
               >
                 <Text style={styles.sessionCompleteButtonText}>
-                  {STRINGS.viewer.back}
+                  {t('viewer.back')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -505,7 +508,7 @@ export default function ViewerScreen() {
             accessibilityRole="button"
           >
             <Text style={styles.topButtonText}>
-              {isFreeStudy ? STRINGS.viewer.back : STRINGS.viewer.close}
+              {isFreeStudy ? t('viewer.back') : t('viewer.close')}
             </Text>
           </TouchableOpacity>
           <Text style={styles.title} numberOfLines={1}>
@@ -520,7 +523,7 @@ export default function ViewerScreen() {
             accessibilityLabel="Toggle toolbar"
             accessibilityRole="button"
           >
-            <Text style={styles.topButtonText}>{STRINGS.viewer.toolbarToggle}</Text>
+            <Text style={styles.topButtonText}>{t('viewer.toolbarToggle')}</Text>
           </TouchableOpacity>
         </Animated.View>
 
@@ -559,7 +562,7 @@ export default function ViewerScreen() {
           {!isFreeStudy && (
             <>
               <View style={styles.timerRow}>
-                <Text style={styles.timerLabel}>{STRINGS.viewer.timerLabel}</Text>
+                <Text style={styles.timerLabel}>{t('viewer.timerLabel')}</Text>
                 <Text style={styles.timerValue}>
                   {minutes}:{seconds}
                 </Text>
@@ -585,7 +588,7 @@ export default function ViewerScreen() {
                   accessibilityRole="button"
                 >
                   <Text style={styles.controlButtonText}>
-                    {isPlaying ? STRINGS.viewer.pause : STRINGS.viewer.play}
+                    {isPlaying ? t('viewer.pause') : t('viewer.play')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -599,7 +602,7 @@ export default function ViewerScreen() {
                   accessibilityLabel="Skip to next pose"
                   accessibilityRole="button"
                 >
-                  <Text style={styles.controlButtonText}>{STRINGS.viewer.skip}</Text>
+                  <Text style={styles.controlButtonText}>{t('viewer.skip')}</Text>
                 </TouchableOpacity>
               </View>
             </>
@@ -608,7 +611,7 @@ export default function ViewerScreen() {
           {/* Lighting sliders (always visible) */}
           <View style={styles.slidersContainer}>
             <View style={styles.sliderRow}>
-              <Text style={styles.sliderLabel}>{STRINGS.viewer.directionalLight}</Text>
+              <Text style={styles.sliderLabel}>{t('viewer.directionalLight')}</Text>
               <Slider
                 style={styles.slider}
                 minimumValue={0}
@@ -622,7 +625,7 @@ export default function ViewerScreen() {
               />
             </View>
             <View style={styles.sliderRow}>
-              <Text style={styles.sliderLabel}>{STRINGS.viewer.ambientLight}</Text>
+              <Text style={styles.sliderLabel}>{t('viewer.ambientLight')}</Text>
               <Slider
                 style={styles.slider}
                 minimumValue={0}
@@ -636,7 +639,7 @@ export default function ViewerScreen() {
               />
             </View>
             <View style={styles.sliderRow}>
-              <Text style={styles.sliderLabel}>{STRINGS.sessionConfig.showGridLabel}</Text>
+              <Text style={styles.sliderLabel}>{t('sessionConfig.showGridLabel')}</Text>
               <TouchableOpacity
                 onPress={() => setShowGrid((prev) => !prev)}
                 style={styles.toggleButton}
@@ -644,7 +647,7 @@ export default function ViewerScreen() {
                 accessibilityRole="switch"
               >
                 <Text style={styles.toggleButtonText}>
-                  {showGrid ? STRINGS.common.on : STRINGS.common.off}
+                  {showGrid ? t('common.on') : t('common.off')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -655,7 +658,7 @@ export default function ViewerScreen() {
             <ScrollView style={styles.toolbarScroll} nestedScrollEnabled>
               {/* Perspective Mode */}
               <Text style={styles.toolbarSectionLabel}>
-                {STRINGS.viewer.perspectiveModeLabel}
+                {t('viewer.perspectiveModeLabel')}
               </Text>
               <View style={styles.chipRow}>
                 {PERSPECTIVE_MODES.map(({ key, label }) => (
@@ -676,7 +679,7 @@ export default function ViewerScreen() {
 
               {/* Model Style */}
               <Text style={styles.toolbarSectionLabel}>
-                {STRINGS.viewer.modelStyleLabel}
+                {t('viewer.modelStyleLabel')}
               </Text>
               <View style={styles.chipRow}>
                 {MODEL_STYLES.map(({ key, label }) => (
@@ -698,37 +701,37 @@ export default function ViewerScreen() {
               {/* Toggles row */}
               <View style={styles.togglesGrid}>
                 <ToolbarToggle
-                  label={STRINGS.viewer.wireframeOverlay}
+                  label={t('viewer.wireframeOverlay')}
                   value={wireframeOverlay}
                   onToggle={() => setWireframeOverlay((p) => !p)}
                 />
                 <ToolbarToggle
-                  label={STRINGS.viewer.negativeSpaceMode}
+                  label={t('viewer.negativeSpaceMode')}
                   value={negativeSpace}
                   onToggle={() => setNegativeSpace((p) => !p)}
                 />
                 <ToolbarToggle
-                  label={STRINGS.viewer.showBoundingBox}
+                  label={t('viewer.showBoundingBox')}
                   value={showBoundingBox}
                   onToggle={() => setShowBoundingBox((p) => !p)}
                 />
                 <ToolbarToggle
-                  label={STRINGS.viewer.showFloorPlane}
+                  label={t('viewer.showFloorPlane')}
                   value={showFloorPlane}
                   onToggle={() => setShowFloorPlane((p) => !p)}
                 />
                 <ToolbarToggle
-                  label={STRINGS.viewer.showPoseShadow}
+                  label={t('viewer.showPoseShadow')}
                   value={showPoseShadow}
                   onToggle={() => setShowPoseShadow((p) => !p)}
                 />
                 <ToolbarToggle
-                  label={STRINGS.viewer.mirrorLabel}
+                  label={t('viewer.mirrorLabel')}
                   value={mirrorX}
                   onToggle={() => setMirrorX((p) => !p)}
                 />
                 <ToolbarToggle
-                  label={STRINGS.viewer.staticModeLabel}
+                  label={t('viewer.staticModeLabel')}
                   value={staticMode}
                   onToggle={() => setStaticMode((p) => !p)}
                 />
@@ -736,7 +739,7 @@ export default function ViewerScreen() {
 
               {/* Grid overlay */}
               <Text style={styles.toolbarSectionLabel}>
-                {STRINGS.viewer.gridOverlayLabel}
+                {t('viewer.gridOverlayLabel')}
               </Text>
               <View style={styles.chipRow}>
                 {GRID_OPTIONS.map(({ key, label }) => (
@@ -758,7 +761,7 @@ export default function ViewerScreen() {
               {/* Opacity slider */}
               <View style={styles.sliderRow}>
                 <Text style={styles.sliderLabel}>
-                  {STRINGS.viewer.modelOpacityLabel}
+                  {t('viewer.modelOpacityLabel')}
                 </Text>
                 <Slider
                   style={styles.slider}
@@ -775,7 +778,7 @@ export default function ViewerScreen() {
 
               {/* Body region selection */}
               <Text style={styles.toolbarSectionLabel}>
-                {STRINGS.viewer.limbSelectionLabel}
+                {t('viewer.limbSelectionLabel')}
               </Text>
               <View style={styles.chipRow}>
                 {ALL_BODY_REGIONS.map((region) => (
